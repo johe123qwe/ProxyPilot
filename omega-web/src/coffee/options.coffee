@@ -13,7 +13,7 @@ $script 'lib/spin.js/spin.js', ->
 $script.ready ['angular-loader'], ->
   angular.module 'omega', ['ngLocale', 'ngAnimate', 'ngSanitize',
     'ui.bootstrap', 'ui.router', 'ngProgress', 'ui.sortable',
-    'angularSpectrumColorpicker', 'ui.validate', 'angular-ladda', 'omegaTarget',
+    'ui.validate', 'angular-ladda', 'omegaTarget',
     'omegaDecoration']
   $script.ready ['omega-pac'], ->
     $script 'js/omega.js', 'omega'
@@ -27,11 +27,9 @@ $script.ready ['angular-loader'], ->
     'lib/angular-ui-sortable/sortable.min.js'
     'lib/angular-ui-utils/validate.min.js'
     'lib/jsondiffpatch/jsondiffpatch.min.js'
-    'lib/angular-spectrum-colorpicker/angular-spectrum-colorpicker.min.js'
   ], 'omega-deps')
 $script.ready ['jquery'], ->
   $script 'lib/jquery-ui-1.10.4.custom.min.js', 'jquery-ui-base'
-  $script 'lib/spectrum/spectrum.js', 'spectrum'
 $script.ready ['jquery-ui-base'], ->
   $script 'lib/jqueryui-touch-punch/jquery.ui.touch-punch.min.js', 'jquery-ui'
 
@@ -60,6 +58,6 @@ $script.ready ['angular'], ->
   $script 'lib/angular-i18n/angular-locale_' + locale + '.js', 'angular-i18n'
 
 $script.ready ['angular', 'omega', 'omega-deps', 'angular-ui-router',
-  'jquery-ui', 'spectrum', 'filesaver', 'blob', 'angular-ladda',
+  'jquery-ui', 'filesaver', 'blob', 'angular-ladda',
   'angular-sanitize', 'angular-i18n'], ->
   angular.bootstrap document, ['omega']

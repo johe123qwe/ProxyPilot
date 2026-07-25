@@ -50,19 +50,26 @@ angular.module('omegaTarget', []).factory 'omegaTarget', ($q) ->
   omegaTarget =
     options: null
     state: (name, value) ->
+      d = $q['defer']()
       if arguments.length == 1
-        getValue = (key) -> try JSON.parse(localStorage[prefix + key])
-        if Array.isArray(name)
-          return $q.when(name.map(getValue))
-        else
-          value = getValue(name)
+        chrome.storage.local.get null, (items) ->
+          getValue = (key) ->
+            raw = items[prefix + key]
+            try JSON.parse(raw) catch then raw
+          if Array.isArray(name)
+            d.resolve(name.map(getValue))
+          else
+            d.resolve(getValue(name))
       else
-        localStorage[prefix + name] = JSON.stringify(value)
-      return $q.when(value)
+        payload = {}
+        payload[prefix + name] = JSON.stringify(value)
+        chrome.storage.local.set payload, ->
+          d.resolve(value)
+      return d.promise
     lastUrl: (url) ->
       name = 'web.last_url'
       if url
-        omegaTarget.state(name, url)
+        localStorage[prefix + name] = JSON.stringify(url)
         url
       else
         try JSON.parse(localStorage[prefix + name])

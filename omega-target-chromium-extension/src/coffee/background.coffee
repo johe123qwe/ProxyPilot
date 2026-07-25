@@ -6,11 +6,11 @@ OmegaTargetCurrent.Log = Object.create(OmegaTargetCurrent.Log)
 Log = OmegaTargetCurrent.Log
 
 _writeLogToLocalStorage = (content) ->
-  try
-    localStorage['log'] += content
-  catch _
-    # Maybe we have reached our limit here. See #1288. Try trimming it.
-    localStorage['log'] = content
+  chrome.storage.local.get 'log', (res) ->
+    log = (res.log || '') + content
+    if log.length > 10000
+      log = log.slice(-10000)
+    chrome.storage.local.set({log: log})
 
 Log.log = (args...) ->
   console.log(args...)
@@ -19,7 +19,7 @@ Log.log = (args...) ->
 Log.error = (args...) ->
   console.error(args...)
   content = args.map(Log.str.bind(Log)).join(' ')
-  localStorage['logLastError'] = content
+  chrome.storage.local.set({logLastError: content})
   _writeLogToLocalStorage('ERROR: ' + content + '\n')
 
 unhandledPromises = []
@@ -45,7 +45,7 @@ drawIcon = (resultColor, profileColor) ->
   return icon if icon
   try
     if not drawContext?
-      drawContext = document.getElementById('canvas-icon').getContext('2d')
+      drawContext = new OffscreenCanvas(38, 38).getContext('2d')
 
     icon = {}
     for size in [16, 19, 24, 32, 38]
@@ -170,13 +170,14 @@ actionForUrl = (url) ->
 
 
 storage = new OmegaTargetCurrent.Storage('local')
-state = new OmegaTargetCurrent.BrowserStorage(localStorage, 'omega.local.')
+state = new OmegaTargetCurrent.BrowserStorage(null, 'omega.local.')
 
 if chrome?.storage?.sync or browser?.storage?.sync
   syncStorage = new OmegaTargetCurrent.Storage('sync')
   sync = new OmegaTargetCurrent.OptionsSync(syncStorage)
-  if localStorage['omega.local.syncOptions'] != '"sync"'
-    sync.enabled = false
+  chrome.storage.local.get 'omega.local.syncOptions', (res) ->
+    if res['omega.local.syncOptions'] != '"sync"'
+      sync.enabled = false
   sync.transformValue = OmegaTargetCurrent.Options.transformValueForSync
 
 proxyImpl = OmegaTargetCurrent.proxy.getProxyImpl(Log)
@@ -212,7 +213,7 @@ options._inspect = new OmegaTargetCurrent.Inspect (url, tab) ->
 
     title = chrome.i18n.getMessage('browserAction_titleInspect', urlDisp) + '\n'
     title += action.title
-    chrome.browserAction.setTitle(title: title, tabId: tab.id)
+    chrome.action?.setTitle?(title: title, tabId: tab.id)
     tabs.setTabBadge(tab, {
       text: '#'
       color: action.resultColor
@@ -318,14 +319,15 @@ encodeError = (obj) ->
     obj
 
 refreshActivePageIfEnabled = ->
-  return if localStorage['omega.local.refreshOnProfileChange'] == 'false'
-  chrome.tabs.query {active: true, lastFocusedWindow: true}, (tabs) ->
-    url = tabs[0].url
-    return if not url
-    return if url.substr(0, 6) == 'chrome'
-    return if url.substr(0, 6) == 'about:'
-    return if url.substr(0, 4) == 'moz-'
-    chrome.tabs.reload(tabs[0].id, {bypassCache: true})
+  chrome.storage.local.get 'omega.local.refreshOnProfileChange', (res) ->
+    return if res['omega.local.refreshOnProfileChange'] == '"false"'
+    chrome.tabs.query {active: true, lastFocusedWindow: true}, (tabs) ->
+      url = tabs[0]?.url
+      return if not url
+      return if url.substr(0, 6) == 'chrome'
+      return if url.substr(0, 6) == 'about:'
+      return if url.substr(0, 4) == 'moz-'
+      chrome.tabs.reload(tabs[0].id, {bypassCache: true})
 
 chrome.runtime.onMessage.addListener (request, sender, respond) ->
   return unless request and request.method

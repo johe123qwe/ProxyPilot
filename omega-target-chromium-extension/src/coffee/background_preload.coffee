@@ -1,8 +1,7 @@
-window.UglifyJS_NoUnsafeEval = true
-localStorage['log'] = ''
-localStorage['logLastError'] = ''
+globalObj = if typeof window != 'undefined' then window else self
+globalObj.UglifyJS_NoUnsafeEval = true
 
-window.OmegaContextMenuQuickSwitchHandler = -> null
+globalObj.OmegaContextMenuQuickSwitchHandler = -> null
 
 if chrome.contextMenus?
   # We don't need this API. However its presence indicates that Chrome >= 35
@@ -15,18 +14,26 @@ if chrome.contextMenus?
       title: chrome.i18n.getMessage('contextMenu_enableQuickSwitch')
       type: 'checkbox'
       checked: false
-      contexts: ["browser_action"]
-      onclick: (info) -> window.OmegaContextMenuQuickSwitchHandler(info)
+      contexts: ["action"]
     })
 
   chrome.contextMenus.create({
+    id: 'reportIssues'
     title: chrome.i18n.getMessage('popup_reportIssues')
-    contexts: ["browser_action"]
-    onclick: OmegaDebug.reportIssue
+    contexts: ["action"]
   })
 
   chrome.contextMenus.create({
+    id: 'errorLog'
     title: chrome.i18n.getMessage('popup_errorLog')
-    contexts: ["browser_action"]
-    onclick: OmegaDebug.downloadLog
+    contexts: ["action"]
   })
+
+  chrome.contextMenus.onClicked.addListener (info, tab) ->
+    switch info.menuItemId
+      when 'enableQuickSwitch'
+        globalObj.OmegaContextMenuQuickSwitchHandler(info)
+      when 'reportIssues'
+        globalObj.OmegaDebug?.reportIssue()
+      when 'errorLog'
+        globalObj.OmegaDebug?.downloadLog()

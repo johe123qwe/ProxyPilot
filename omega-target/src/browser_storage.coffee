@@ -3,49 +3,63 @@ Promise = require('bluebird')
 
 class BrowserStorage extends Storage
   constructor: (@storage, @prefix = '') ->
-    @proto = Object.getPrototypeOf(@storage)
+    # unused storage as we use chrome.storage.local now
+    undefined
 
   get: (keys) ->
-    map = {}
-    if typeof keys == 'string'
-      map[keys] = undefined
-    else if Array.isArray(keys)
-      for key in keys
-        map[key] = undefined
-    else if typeof keys == 'object'
-      map = keys
-    for own key of map
-      try
-        value = JSON.parse(@proto.getItem.call(@storage, @prefix + key))
-      map[key] = value if value?
-      if typeof map[key] == 'undefined'
-        delete map[key]
-    Promise.resolve map
+    new Promise (resolve) =>
+      chrome.storage.local.get null, (items) =>
+        map = {}
+        if typeof keys == 'string'
+          keysMap = {}
+          keysMap[keys] = undefined
+          keys = keysMap
+        else if Array.isArray(keys)
+          keysMap = {}
+          for key in keys
+            keysMap[key] = undefined
+          keys = keysMap
+        else if typeof keys != 'object'
+          keys = {}
+        
+        for own key of keys
+          raw = items[@prefix + key]
+          if typeof raw == 'string'
+            try
+              value = JSON.parse(raw)
+            catch
+              value = raw
+          else
+            value = raw
+          map[key] = value if value?
+          if typeof map[key] == 'undefined' and typeof keys[key] != 'undefined'
+            map[key] = keys[key]
+        resolve map
 
   set: (items) ->
-    for own key, value of items
-      value = JSON.stringify(value)
-      @proto.setItem.call(@storage, @prefix + key, value)
-    Promise.resolve items
+    new Promise (resolve) =>
+      payload = {}
+      for own key, value of items
+        payload[@prefix + key] = JSON.stringify(value)
+      chrome.storage.local.set payload, ->
+        resolve items
 
   remove: (keys) ->
-    if not keys?
-      if not @prefix
-        @proto.clear.call(@storage)
+    new Promise (resolve) =>
+      if not keys?
+        if not @prefix
+          chrome.storage.local.clear -> resolve()
+        else
+          chrome.storage.local.get null, (items) =>
+            toRemove = []
+            for own key of items
+              if key.indexOf(@prefix) == 0
+                toRemove.push(key)
+            chrome.storage.local.remove toRemove, -> resolve()
       else
-        index = 0
-        while true
-          key = @proto.key.call(index)
-          break if key == null
-          if @key.substr(0, @prefix.length) == @prefix
-            @proto.removeItem.call(@storage, @prefix + keys)
-          else
-            index++
-    if typeof keys == 'string'
-      @proto.removeItem.call(@storage, @prefix + keys)
-    for key in keys
-      @proto.removeItem.call(@storage, @prefix + key)
-
-    Promise.resolve()
+        if typeof keys == 'string'
+          keys = [keys]
+        toRemove = (@prefix + key for key in keys)
+        chrome.storage.local.remove toRemove, -> resolve()
 
 module.exports = BrowserStorage

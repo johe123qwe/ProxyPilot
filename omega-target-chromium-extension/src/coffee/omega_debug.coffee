@@ -1,23 +1,35 @@
-window.OmegaDebug =
+globalObj = if typeof window != 'undefined' then window else self
+globalObj.OmegaDebug =
   getProjectVersion: ->
     chrome.runtime.getManifest().version
   getExtensionVersion: ->
     chrome.runtime.getManifest().version
   downloadLog: ->
-    blob = new Blob [localStorage['log']], {type: "text/plain;charset=utf-8"}
-    filename = "OmegaLog_#{Date.now()}.txt"
+    chrome.storage.local.get 'log', (res) ->
+      log = res.log || ''
+      filename = "OmegaLog_#{Date.now()}.txt"
 
-    if browser?.downloads?.download?
-      url = URL.createObjectURL(blob)
-      browser.downloads.download({url: url, filename: filename})
-    else
-      saveAs(blob, filename)
+      hasBlob = typeof Blob != 'undefined'
+      hasURL = typeof URL != 'undefined'
+      if hasBlob and hasURL and URL.createObjectURL?
+        blob = new Blob [log], {type: "text/plain;charset=utf-8"}
+        api = browser?.downloads || chrome?.downloads
+        if api?.download?
+          url = URL.createObjectURL(blob)
+          api.download({url: url, filename: filename})
+        else if typeof saveAs != 'undefined'
+          saveAs(blob, filename)
+      else
+        url = "data:text/plain;charset=utf-8," + encodeURIComponent(log)
+        if chrome?.downloads?.download?
+          chrome.downloads.download({url: url, filename: filename})
+        else if chrome?.tabs?.create?
+          chrome.tabs.create({url: url})
   resetOptions: ->
-    localStorage.clear()
-    # Prevent options loading from sync storage after reload.
-    localStorage['omega.local.syncOptions'] = '"conflict"'
-    chrome.storage.local.clear()
-    chrome.runtime.reload()
+    localStorage?.clear()
+    chrome.storage.local.clear ->
+      chrome.storage.local.set {'omega.local.syncOptions': '"conflict"'}, ->
+        chrome.runtime.reload()
   reportIssue: ->
     url = 'https://github.com/FelisCatus/SwitchyOmega/issues/new?title=&body='
     finalUrl = url
@@ -38,9 +50,11 @@ window.OmegaDebug =
         #{env.userAgent}
       """
       finalUrl = url + encodeURIComponent(body)
-      err = localStorage['logLastError']
-      if err
-        body += "\n```\n#{err}\n```"
-        finalUrl = (url + encodeURIComponent(body)).substr(0, 2000)
-
-    chrome.tabs.create(url: finalUrl)
+      chrome.storage.local.get 'logLastError', (res) ->
+        err = res.logLastError
+        if err
+          body += "\n```\n#{err}\n```"
+          finalUrl = (url + encodeURIComponent(body)).substr(0, 2000)
+        chrome.tabs.create(url: finalUrl)
+    catch e
+      chrome.tabs.create(url: finalUrl)

@@ -1,8 +1,15 @@
-window.onerror = (message, url, line, col, err) ->
-  log = localStorage['log'] || ''
+globalObj = if typeof window != 'undefined' then window else self
+globalObj.onerror = (message, url, line, col, err) ->
+  content = ''
   if err?.stack
-    log += err.stack + '\n\n'
+    content += err.stack + '\n\n'
   else
-    log += "#{url}:#{line}:#{col}:\t#{message}\n\n"
-  localStorage['log'] = log
+    content += "#{url}:#{line}:#{col}:\t#{message}\n\n"
+
+  if typeof chrome != 'undefined' and chrome.storage?.local
+    chrome.storage.local.get 'log', (res) ->
+      log = (res.log || '') + content
+      if log.length > 10000
+        log = log.slice(-10000)
+      chrome.storage.local.set({log: log})
   return

@@ -1,0 +1,15 @@
+[SwitchyOmega Conditions]
+; Require: SwitchyOmega >= 2.3.2
+; Date: 2026/7/26
+; Usage: https://github.com/FelisCatus/ProxyPilot/wiki/RuleListUsage
+
+*.vk.com
+*.userapi.com
+*.vk.ru
+*.vkontakte.ru
+*.vkuserphoto.ru
+*.vkuservideo.net
+*.vkuseraudio.net
+*.vk-cdn.net
+*.vk-cdn.me
+*.mycdn.me

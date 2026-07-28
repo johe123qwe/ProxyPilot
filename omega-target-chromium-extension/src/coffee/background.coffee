@@ -222,9 +222,24 @@ options._inspect = new OmegaTargetCurrent.Inspect (url, tab) ->
 options.setProxyNotControllable(null)
 timeout = null
 
+# Right after the service worker (re)starts, Options#init() is still
+# asynchronously restoring the persisted current profile. Until that
+# finishes, this extension genuinely does not control the proxy yet, and
+# Chromium's proxy.settings.onChange will report exactly that - but that is
+# not evidence of some other app/policy taking over, just this instance not
+# having applied its profile yet. Treating it as an external change here
+# would make setExternalProfile() stomp the about-to-be-restored profile
+# with "system" (see options.coffee#setExternalProfile), which is the cause
+# of profile selections spuriously reverting to system proxy under MV3's
+# frequent service worker restarts. So ignore control-change notifications
+# until the initial profile restore has completed at least once.
+proxyChangeReady = false
+options.ready.then(-> proxyChangeReady = true)
+
 proxyImpl.watchProxyChange (details) ->
   return if options.externalApi.disabled
   return unless details
+  return unless proxyChangeReady
   notControllableBefore = options.proxyNotControllable()
   internal = false
   noRevert = false

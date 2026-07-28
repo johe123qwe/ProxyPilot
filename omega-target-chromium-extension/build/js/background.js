@@ -1,5 +1,5 @@
 (function() {
-  var Log, OmegaTargetCurrent, Promise, actionForUrl, charCodeUnderscore, dispName, drawContext, drawError, drawIcon, encodeError, external, iconCache, isHidden, options, proxyImpl, refreshActivePageIfEnabled, state, storage, sync, syncStorage, tabs, timeout, unhandledPromises, unhandledPromisesId, unhandledPromisesNextId, _ref, _ref1, _writeLogToLocalStorage,
+  var Log, OmegaTargetCurrent, Promise, actionForUrl, charCodeUnderscore, dispName, drawContext, drawError, drawIcon, encodeError, external, iconCache, isHidden, options, proxyChangeReady, proxyImpl, refreshActivePageIfEnabled, state, storage, sync, syncStorage, tabs, timeout, unhandledPromises, unhandledPromisesId, unhandledPromisesNextId, _ref, _ref1, _writeLogToLocalStorage,
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty;
 
@@ -303,12 +303,32 @@
 
   timeout = null;
 
+  // Right after the service worker (re)starts, Options#init() is still
+  // asynchronously restoring the persisted current profile. Until that
+  // finishes, this extension genuinely does not control the proxy yet, and
+  // Chromium's proxy.settings.onChange will report exactly that - but that is
+  // not evidence of some other app/policy taking over, just this instance not
+  // having applied its profile yet. Treating it as an external change here
+  // would make setExternalProfile() stomp the about-to-be-restored profile
+  // with "system" (see options.coffee#setExternalProfile), which is the cause
+  // of profile selections spuriously reverting to system proxy under MV3's
+  // frequent service worker restarts. So ignore control-change notifications
+  // until the initial profile restore has completed at least once.
+  proxyChangeReady = false;
+
+  options.ready.then(function() {
+    return proxyChangeReady = true;
+  });
+
   proxyImpl.watchProxyChange(function(details) {
     var internal, noRevert, notControllableBefore, parsed, reason;
     if (options.externalApi.disabled) {
       return;
     }
     if (!details) {
+      return;
+    }
+    if (!proxyChangeReady) {
       return;
     }
     notControllableBefore = options.proxyNotControllable();

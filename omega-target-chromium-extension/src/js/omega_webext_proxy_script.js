@@ -47,9 +47,14 @@ FindProxyForURL = (function () {
             // MOZ: SOCKS5 proxies are identified by "type": "socks".
             // https://dxr.mozilla.org/mozilla-central/rev/ffe6cc09ccf38cca6f0e727837bbc6cb722d1e71/toolkit/components/extensions/ProxyScriptContext.jsm#51
             proxyInfo.type = 'socks';
-            // Enable SOCKS5 remote DNS.
-            // TODO(catus): Maybe allow the users to configure this?
-            proxyInfo.proxyDNS = true;
+            // Resolving names through the proxy is the safer default (it
+            // avoids leaking the hostname to the local resolver), but it
+            // breaks setups that do their own resolution, e.g.
+            // DNS-over-HTTPS - so let the profile turn it off. Absent an
+            // explicit choice, keep the old always-on behavior.
+            if (profile.proxyDNS !== false) {
+              proxyInfo.proxyDNS = true;
+            }
           }
           if (auth) {
             proxyInfo.username = auth.username;

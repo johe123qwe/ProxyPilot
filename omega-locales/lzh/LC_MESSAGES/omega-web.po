@@ -15,10 +15,10 @@ msgstr ""
 "X-Generator: Weblate 5.7-dev\n"
 
 msgid "appNameShort"
-msgstr "SwitchyOmega"
+msgstr "ProxyPilot"
 
 msgid "manifest_app_name"
-msgstr "Proxy SwitchyOmega"
+msgstr "ProxyPilot"
 
 msgid "manifest_app_description"
 msgstr "迅速易事地管理並切換多個代理。"

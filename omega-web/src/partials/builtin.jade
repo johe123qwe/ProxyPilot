@@ -1,0 +1,8 @@
+.page-header
+  h2 {{'options_tab_builtinProfiles' | tr}}
+p.help-block {{'options_builtinProfilesHelp' | tr}}
+section.settings-group(ng-repeat='entry in builtinProfileList')
+  span.profile-color-editor
+    input(type='color' ng-model='entry.color'
+      ng-change='setColor(entry, entry.color)')
+  h2.profile-name {{'options_profileTabPrefix' | tr}}{{'profile_' + entry.name | tr}}

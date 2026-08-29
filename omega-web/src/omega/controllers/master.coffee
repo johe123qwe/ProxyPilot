@@ -25,14 +25,17 @@ angular.module('omega').controller 'MasterCtrl', ($scope, $rootScope, $window,
   $rootScope.revertOptions = ->
     $window.location.reload()
 
-  $rootScope.exportScript = (name) ->
+  $rootScope.exportScript = (event, name) ->
+    # Hold Shift while exporting to also emit a SOCKS4a fallback after each
+    # SOCKS5 proxy, for old clients that don't understand the SOCKS5 token.
+    $window.OmegaPacExportSocksFallback = !!event?.shiftKey
     getProfileName =
       if name
         $q.when(name)
       else
         omegaTarget.state('currentProfileName')
-          
-    getProfileName.then (profileName) ->
+
+    getProfileName.then((profileName) ->
       return unless profileName
       profile = $rootScope.profileByName(profileName)
       return if profile.profileType in ['DirectProfile', 'SystemProfile']
@@ -53,6 +56,8 @@ angular.module('omega').controller 'MasterCtrl', ($scope, $rootScope, $window,
             type: 'error'
             message: tr('options_profileNotFound', [missingProfile])
           )
+    ).finally ->
+      $window.OmegaPacExportSocksFallback = false
 
   diff = jsondiffpatch.create(
     objectHash: (obj) -> JSON.stringify(obj)

@@ -13,6 +13,12 @@
 
   Log = OmegaTargetCurrent.Log;
 
+  globalThis.isBrowserRestart = false;
+
+  chrome.runtime.onStartup.addListener(function() {
+    return globalThis.isBrowserRestart = true;
+  });
+
   _writeLogToLocalStorage = function(content) {
     return chrome.storage.local.get('log', function(res) {
       var log;
@@ -128,7 +134,7 @@
       request = OmegaPac.Conditions.requestFromUrl(url);
       return options.matchProfile(request);
     }).then(function(_arg) {
-      var attached, condition, condition2Str, current, currentName, details, direct, icon, name, profile, profileColor, realCurrentName, result, resultColor, results, shortTitle, _i, _len, _ref, _ref1;
+      var attached, badgeText, condition, condition2Str, current, currentName, details, direct, icon, name, profile, profileColor, realCurrentName, result, resultColor, results, shortTitle, _i, _len, _ref, _ref1;
       profile = _arg.profile, results = _arg.results;
       current = options.currentProfile();
       currentName = dispName(current.name);
@@ -213,12 +219,17 @@
       if (profile.name !== currentName) {
         shortTitle += ' => ' + profile.name;
       }
+      badgeText = null;
+      if (options._options['-showResultProfileOnActionBadgeText']) {
+        badgeText = profile.name;
+      }
       return {
         title: chrome.i18n.getMessage('browserAction_titleWithResult', [currentName, dispName(profile.name), details]),
         shortTitle: shortTitle,
         icon: icon,
         resultColor: resultColor,
-        profileColor: profileColor
+        profileColor: profileColor,
+        badgeText: badgeText
       };
     })["catch"](function() {
       return null;
@@ -303,17 +314,6 @@
 
   timeout = null;
 
-  // Right after the service worker (re)starts, Options#init() is still
-  // asynchronously restoring the persisted current profile. Until that
-  // finishes, this extension genuinely does not control the proxy yet, and
-  // Chromium's proxy.settings.onChange will report exactly that - but that is
-  // not evidence of some other app/policy taking over, just this instance not
-  // having applied its profile yet. Treating it as an external change here
-  // would make setExternalProfile() stomp the about-to-be-restored profile
-  // with "system" (see options.coffee#setExternalProfile), which is the cause
-  // of profile selections spuriously reverting to system proxy under MV3's
-  // frequent service worker restarts. So ignore control-change notifications
-  // until the initial profile restore has completed at least once.
   proxyChangeReady = false;
 
   options.ready.then(function() {

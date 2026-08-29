@@ -135,8 +135,40 @@
       <div class="form-group">
         <label>{{'options_group_ruleListUrl' | tr}}</label>
         <div input-group-clear="input-group-clear" type="url" model="attached.sourceUrl" style="vertical-align: middle" class="width-limit inline-form-control"></div>
+        <p class="help-block">{{'options_ruleListUrlHelp' | tr}}</p>
       </div>
-      <p class="help-block">{{'options_ruleListUrlHelp' | tr}}</p>
+      <div class="form-group">
+        <label>{{'options_group_fetchHeaders' | tr}}</label>
+        <div class="width-limit">
+          <div ng-if="attached.headers.length &gt; 0" class="table-responsive">
+            <table class="table table-bordered table-condensed">
+              <thead>
+                <tr>
+                  <th>{{'options_fetchHeaderName' | tr}}</th>
+                  <th>{{'options_fetchHeaderValue' | tr}}</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="header in attached.headers track by $index">
+                  <td>
+                    <input type="text" ng-model="header.name" placeholder="{{'options_fetchHeaderNamePlaceholder' | tr}}" class="form-control"/>
+                  </td>
+                  <td>
+                    <input type="text" ng-model="header.value" placeholder="{{'options_fetchHeaderValuePlaceholder' | tr}}" class="form-control"/>
+                  </td>
+                  <td>
+                    <button type="button" title="{{'options_deleteHeader' | tr}}" ng-click="removeHeader($index)" class="btn btn-danger btn-sm"><span class="glyphicon glyphicon-trash"></span></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <button type="button" ng-click="addHeader()" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-plus"></span> {{'options_addHeader' | tr}}
+          </button>
+        </div>
+        <p class="help-block">{{'options_fetchHeadersHelp' | tr}}</p>
+      </div>
     </form>
     <p>
       <button ng-disabled="!attached.sourceUrl" ng-click="updateProfile(attached.name)" ladda="updatingProfile[attached.name]" data-spinner-color="#000000" ng-class="attached.sourceUrl &amp;&amp; !attached.lastUpdate ? &quot;btn-primary&quot; : &quot;btn-default&quot;" class="btn btn-default"><span class="glyphicon glyphicon-download-alt"></span> {{'options_downloadProfileNow' | tr}}</button>

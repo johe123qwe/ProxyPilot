@@ -146,11 +146,28 @@ module.controller 'PopupCtrl', ($scope, $window, $q, omegaTarget,
 
   $scope.tempRuleMenu = {open: false}
   $scope.nameExternal = {open: false}
+  $scope.tempRules = []
+  loadTempRules = ->
+    omegaTarget.getTempRules().then (rules) ->
+      $scope.tempRules = rules ? []
+  loadTempRules()
+
   $scope.addTempRule = (domain, profileName) ->
     $scope.tempRuleMenu.open = false
     omegaTarget.addTempRule(domain, profileName).then ->
       omegaTarget.state('lastProfileNameForCondition', profileName)
       refresh()
+
+  $scope.removeTempRule = (domain) ->
+    omegaTarget.removeTempRule(domain).then ->
+      loadTempRules().then ->
+        # Nothing left to manage, so drop back to the menu.
+        $scope.showTempRules = false if $scope.tempRules.length == 0
+
+  $scope.clearTempRules = ->
+    omegaTarget.clearTempRules().then ->
+      loadTempRules().then ->
+        $scope.showTempRules = false
 
   $scope.setDefaultProfile = (profileName, defaultProfileName) ->
     omegaTarget.setDefaultProfile(profileName, defaultProfileName).then ->
@@ -190,11 +207,17 @@ module.controller 'PopupCtrl', ($scope, $window, $q, omegaTarget,
       return
     $scope.showConditionForm = false
     $scope.showRequestInfo = false
+    $scope.showTempRules = false
+    $scope.showNetwork = false
 
   preselectedProfileNameForCondition = 'direct'
 
   if $window.location.hash == '#!requestInfo'
     $scope.showRequestInfo = true
+  else if $window.location.hash == '#!tempRules'
+    $scope.showTempRules = true
+  else if $window.location.hash == '#!network'
+    $scope.showNetwork = true
   else if $window.location.hash == '#!external'
     $scope.nameExternal = {open: true}
 
@@ -251,11 +274,16 @@ module.controller 'PopupCtrl', ($scope, $window, $q, omegaTarget,
     for own domain, domainInfo of info.summary
       domainInfo.domain = domain
       info.domains.push(domainInfo)
-    info.domains.sort (a, b) -> b.errorCount - a.errorCount
+    # Failures first, then busiest, so whatever needs attention is on top.
+    info.domains.sort (a, b) ->
+      (b.errorCount - a.errorCount) or
+        ((b.requestCount ? 0) - (a.requestCount ? 0))
+    failedDomains = (d for d in info.domains when d.errorCount > 0)
     $scope.$apply ->
       $scope.requestInfo = info
-      $scope.requestInfoProvided ?= (info?.domains.length > 0)
-      for domain in info.domains
+      $scope.failedDomains = failedDomains
+      $scope.requestInfoProvided ?= (failedDomains.length > 0)
+      for domain in failedDomains
         $scope.domainsForCondition[domain.domain] ?= true
       $scope.profileForDomains ?= preselectedProfileNameForCondition
 

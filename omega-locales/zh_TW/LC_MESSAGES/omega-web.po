@@ -15,13 +15,13 @@ msgstr ""
 "X-Generator: Weblate 3.7\n"
 
 msgid "appNameShort"
-msgstr "SwitchyOmega"
+msgstr "ProxyPilot"
 
 msgid "manifest_app_name"
-msgstr "Proxy SwitchyOmega"
+msgstr "ProxyPilot"
 
 msgid "manifest_app_description"
-msgstr "輕鬆簡單地管理並切換多個代理伺服器設定。"
+msgstr "輕鬆簡單地管理並切換多個代理伺服器設定。SwitchyOmega 的 MV3 相容分支。"
 
 msgid "manifest_icon_default_title"
 msgstr "正在載入……"
@@ -132,7 +132,7 @@ msgstr ""
 msgid "condition_alert_fullUrlLimitation"
 msgstr ""
 "Chrome 52 起，<code>https://</code>協定下的完整網址無法正常比對。<a href='https://github.com/"
-"FelisCatus/SwitchyOmega/wiki/"
+"FelisCatus/ProxyPilot/wiki/"
 "Chromium-%E5%AE%8C%E6%95%B4%E7%BD%91%E5%9D%80%E9%99%90%E5%88%B6'>更多訊息...</a>"
 
 msgid "condition_alert_fullUrlLimitationLink"
@@ -193,7 +193,7 @@ msgid "inputClear_restore"
 msgstr "還原"
 
 msgid "options_title"
-msgstr "SwitchyOmega 選項"
+msgstr "ProxyPilot 選項"
 
 msgid "options_experimental_badge"
 msgstr "測試版"
@@ -215,6 +215,12 @@ msgstr "通用"
 
 msgid "options_tab_importExport"
 msgstr "匯入/匯出"
+
+msgid "options_tab_builtinProfiles"
+msgstr "內建情境模式"
+
+msgid "options_builtinProfilesHelp"
+msgstr "自訂內建情境模式所使用的顏色。這些顏色會顯示在工具列圖示和彈出式選單中。"
 
 msgid "options_newProfile"
 msgstr "新增情境模式…"
@@ -242,6 +248,9 @@ msgstr "右鍵選單中，可檢查網頁元素所使用的代理。"
 
 msgid "options_addConditionsToBottom"
 msgstr "把以彈出式選單建立的規則加入到清單末尾。"
+
+msgid "options_showResultProfileOnActionBadgeText"
+msgstr "在工具列圖示上以角標顯示比對到的情境模式名稱。"
 
 msgid "options_group_keyboardShortcut"
 msgstr "鍵盤快速鍵"
@@ -301,11 +310,11 @@ msgstr ""
 
 msgid "options_conflicts_lowerPriority"
 msgstr ""
-"如果 SwitchyOmega 圖示上顯示這樣的紅色徽章，表示另一個應用優先級較高，因此SwitchyOmega 無法控制代理設定。請嘗試卸載 "
-"SwitchyOmega 再重新安裝，這樣可能可以提高 SwitchyOmega 的優先級。如果重裝後您仍然看到衝突，那麼請考慮移除那個導致衝突的應用。"
+"如果 ProxyPilot 圖示上顯示這樣的紅色徽章，表示另一個應用優先級較高，因此ProxyPilot 無法控制代理設定。請嘗試卸載 "
+"ProxyPilot 再重新安裝，這樣可能可以提高 ProxyPilot 的優先級。如果重裝後您仍然看到衝突，那麼請考慮移除那個導致衝突的應用。"
 
 msgid "options_conflicts_higherPriority"
-msgstr "如果 SwitchyOmega 的優先級較高，那麼您可以在彈出式選單中選擇 $SYSTEMPROFILE$ 來把控制權還給其他應用或系統設定。"
+msgstr "如果 ProxyPilot 的優先級較高，那麼您可以在彈出式選單中選擇 $SYSTEMPROFILE$ 來把控制權還給其他應用或系統設定。"
 
 msgid "options_showExternalProfile"
 msgstr "在彈出式選單中顯示選單項目，以匯入其他應用提供的代理設定。"
@@ -370,7 +379,7 @@ msgid "options_exportLegacyRuleList"
 msgstr "匯出規則清單時使用 Proxy Switchy!/SwitchyPlus/SwitchySharp 相容格式。"
 
 msgid "options_exportLegacyRuleListHelp"
-msgstr "如果您需要釋出規則清單給那些軟體的使用者，請啟用此選項。<br>建議您提醒訂閱者升級到 SwitchyOmega 以享受新版功能。"
+msgstr "如果您需要釋出規則清單給那些軟體的使用者，請啟用此選項。<br>建議您提醒訂閱者升級到 ProxyPilot 以享受新版功能。"
 
 msgid "options_group_importExportSettings"
 msgstr "選項"
@@ -490,7 +499,7 @@ msgstr "代理認證"
 
 msgid "options_proxy_authNotSupported"
 msgstr "您的瀏覽器不支持 $PROTOCOLDISP$ 代理認證！如有問題請聯繫您的瀏覽器支持，"
-"請勿反饋此問題給 SwitchyOmega."
+"請勿反饋此問題給 ProxyPilot."
 
 msgid "options_proxy_authAllWarningPac"
 msgstr "警告：使用者名稱和密碼將會提供給 PAC 指令碼返回的任何伺服器，有時目標伺服器會出乎您的預料。"
@@ -518,6 +527,12 @@ msgstr "對於所有代理使用相同伺服器。"
 
 msgid "options_proxy_expand"
 msgstr "顯示進階設定"
+
+msgid "options_proxy_proxyDNS"
+msgstr "透過 SOCKS 代理解析 DNS 請求。"
+
+msgid "options_proxy_proxyDNSHelp"
+msgstr "如果你自行解析網域名稱（例如使用 DNS-over-HTTPS），請關閉此項。"
 
 msgid "options_group_bypassList"
 msgstr "不代理的位址清單"
@@ -589,6 +604,30 @@ msgstr "規則清單網址"
 
 msgid "options_ruleListUrlHelp"
 msgstr "應用將從此網址下載規則清單。如果網址留空，則以下文字會被直接處理後作為規則清單使用。"
+
+msgid "options_group_fetchHeaders"
+msgstr "自訂請求標頭"
+
+msgid "options_fetchHeaderName"
+msgstr "標頭名稱"
+
+msgid "options_fetchHeaderValue"
+msgstr "標頭值"
+
+msgid "options_fetchHeaderNamePlaceholder"
+msgstr "例如 Authorization"
+
+msgid "options_fetchHeaderValuePlaceholder"
+msgstr "例如 Bearer my-token"
+
+msgid "options_fetchHeadersHelp"
+msgstr "從上方網址下載時附帶的額外 HTTP 請求標頭。當來源需要身分驗證時會用到。"
+
+msgid "options_addHeader"
+msgstr "新增標頭"
+
+msgid "options_deleteHeader"
+msgstr "刪除標頭"
 
 msgid "options_group_ruleListText"
 msgstr "規則清單正文"
@@ -681,16 +720,16 @@ msgid "options_attachProfileHelp"
 msgstr "可以加入規則清單，以便引用他人線上釋出的一組規則。"
 
 msgid "options_modalHeader_welcome"
-msgstr "歡迎使用 SwitchyOmega"
+msgstr "歡迎使用 ProxyPilot"
 
 msgid "options_welcomeNormal"
-msgstr "您已經成功安裝了 SwitchyOmega ，一個強大的代理切換工具。"
+msgstr "您已經成功安裝了 ProxyPilot ，一個強大的代理切換工具。"
 
 msgid "options_welcomeNormalGuide"
 msgstr "您可以通過選項頁面設定需要使用的代理伺服器，下面我們就來試試看吧。"
 
 msgid "options_welcomeUpgrade"
-msgstr "您已經成功升級到 SwitchyOmega. 別擔心，所有設定都已經升級成功，可以繼續使用。"
+msgstr "您已經成功升級到 ProxyPilot. 別擔心，所有設定都已經升級成功，可以繼續使用。"
 
 msgid "options_welcomeUpgradeGuide"
 msgstr "現在我們來熟悉一下新的選項頁面。"
@@ -767,7 +806,7 @@ msgid "options_profileNameEmpty"
 msgstr "情境模式名稱不能為空。"
 
 msgid "popup_title"
-msgstr "SwitchyOmega 彈出選單"
+msgstr "ProxyPilot 彈出選單"
 
 msgid "options_modalHeader_deleteRule"
 msgstr "刪除規則"
@@ -918,12 +957,12 @@ msgstr "立即更新情境模式"
 
 msgid "options_guide_fixedProfileStep"
 msgstr ""
-"<b>代理情境</b>包含了伺服器位址、埠等代理的資訊。<br>在 SwitchyOmega "
+"<b>代理情境</b>包含了伺服器位址、埠等代理的資訊。<br>在 ProxyPilot "
 "中，情境模式是代理設定的基本單元。<br>預設設定中已經建立了一個代理情境模式作為樣例。試著開啟它吧。"
 
 msgid "options_guide_fixedServersStep"
 msgstr ""
-"在這裡，您可以填寫所需的代理伺服器位址和埠。<br>SwitchyOmega<b>軟體本身不提供任何內建代理伺服器</b>。<br>如果您不清楚應該填寫什"
+"在這裡，您可以填寫所需的代理伺服器位址和埠。<br>ProxyPilot<b>軟體本身不提供任何內建代理伺服器</b>。<br>如果您不清楚應該填寫什"
 "麼，最好諮詢下您的網路提供者，或者參考代理軟體的設定說明。"
 
 msgid "options_guide_autoSwitchProfileStep"
@@ -936,7 +975,7 @@ msgstr "如果您需要更多的情境模式，可以隨時在這裡建立<b>代
 
 msgid "options_guide_conditionStep"
 msgstr ""
-"SwitchyOmega "
+"ProxyPilot "
 "可以依據<b>切換條件</b>對不同的網路請求使用不同的情境模式。<br>例如<b>網域萬用字元</b>條件可以對某個網域下的所有網址使用特定的情境模式。"
 
 msgid "options_guide_conditionTypeStep"
@@ -944,7 +983,7 @@ msgstr "您可以使用各種條件類型來比對網域或者整個網址。<br
 
 msgid "options_guide_conditionProfileStep"
 msgstr ""
-"對於<b>任何比對該條件的請求</b>，SwitchyOmega 會使用這個情境模式。<br>如果選擇了<b>\"[直接連線]\""
+"對於<b>任何比對該條件的請求</b>，ProxyPilot 會使用這個情境模式。<br>如果選擇了<b>\"[直接連線]\""
 "情境模式</b>，則比對的請求不使用任何代理。"
 
 msgid "options_guide_switchDefaultStep"
@@ -972,16 +1011,16 @@ msgid "popup_proxyNotControllable_unknown"
 msgstr "無法設定代理設定。請檢查系統和瀏覽器設定。"
 
 msgid "popup_proxyNotControllable_disabled"
-msgstr "在其他程式或擴充功能的要求下，SwitchyOmega 已經停用代理設定。"
+msgstr "在其他程式或擴充功能的要求下，ProxyPilot 已經停用代理設定。"
 
 msgid "popup_proxyNotControllable_upgrade"
-msgstr "代理設定現在由新版本的 SwitchyOmega 控制。"
+msgstr "代理設定現在由新版本的 ProxyPilot 控制。"
 
 msgid "popup_proxyNotControllableDetails"
-msgstr "如果不解決以上問題，則無法使用SwitchyOmega切換代理。"
+msgstr "如果不解決以上問題，則無法使用ProxyPilot切換代理。"
 
 msgid "popup_proxyNotControllableDetails_upgrade"
-msgstr "兩個不同版本的 SwitchyOmega （如穩定版和測試版）不能共存。請停用其中之一。"
+msgstr "兩個不同版本的 ProxyPilot （如穩定版和測試版）不能共存。請停用其中之一。"
 
 msgid "popup_proxyNotControllableManage"
 msgstr "管理擴充功能"
@@ -991,6 +1030,39 @@ msgstr "加入條件到情境模式"
 
 msgid "popup_addCondition"
 msgstr "加入條件"
+
+msgid "popup_manageTempRules"
+msgstr "暫時規則 ($COUNT$)"
+
+msgid "popup_tempRulesHeading"
+msgstr "暫時規則"
+
+msgid "popup_tempRulesHelp"
+msgstr "暫時規則在擴充功能重新啟動前有效，不會儲存到情境模式中。"
+
+msgid "popup_removeTempRule"
+msgstr "刪除此暫時規則"
+
+msgid "popup_clearTempRules"
+msgstr "全部刪除"
+
+msgid "popup_networkMonitor"
+msgstr "網路監視 ($COUNT$ 個網域)"
+
+msgid "popup_networkHeading"
+msgstr "本頁面的請求"
+
+msgid "popup_networkHelp"
+msgstr "本頁面各網域分別比對到了哪個情境模式。可用於確認規則是否按預期生效。"
+
+msgid "popup_networkDomain"
+msgstr "網域"
+
+msgid "popup_networkProfile"
+msgstr "情境模式"
+
+msgid "popup_networkRequests"
+msgstr "請求數"
 
 msgid "popup_showOptions"
 msgstr "選項"
@@ -1011,7 +1083,7 @@ msgid "popup_requestErrorWarning"
 msgstr "由於網路原因，此頁面部分資源載入失敗。這些問題可能是由您的網路、代理伺服器或網站本身引起的。"
 
 msgid "popup_requestErrorWarningHelp"
-msgstr "這些問題並非由 SwitchyOmega 自身導致，它只不過偵測並報告了錯誤而已。"
+msgstr "這些問題並非由 ProxyPilot 自身導致，它只不過偵測並報告了錯誤而已。"
 
 msgid "popup_requestErrorAddCondition"
 msgstr "您可以檢視以下網域，並依據實際情況確定是否對其使用代理。"
@@ -1034,7 +1106,7 @@ msgstr ""
 "\n"
 "\n"
 "<!-- ↑請在此行上方填寫問題/建議詳情，可用中文↑ -->\n"
-"SwitchyOmega $projectVersion$\n"
+"ProxyPilot $projectVersion$\n"
 "$userAgent$"
 
 msgid "browserAction_profileDetails_PacProfile"
@@ -1053,15 +1125,15 @@ msgid "browserAction_profileDetails_RuleListProfile"
 msgstr "(依據規則清單切換)"
 
 msgid "browserAction_titleNormal"
-msgstr "SwitchyOmega:: $PROFILE$"
+msgstr "ProxyPilot:: $PROFILE$"
 
 msgid "browserAction_titleWithResult"
 msgstr ""
-"SwitchyOmega:: $1:PROFILE$\n"
+"ProxyPilot:: $1:PROFILE$\n"
 "$3:DETAILS$"
 
 msgid "browserAction_titleNewerOptions"
-msgstr "錯誤：需要新版本的SwitchyOmega才能載入目前選項。"
+msgstr "錯誤：需要新版本的ProxyPilot才能載入目前選項。"
 
 msgid "browserAction_titleOptionError"
 msgstr "錯誤：選項檔案已經損壞，點選此處重設選項。"
@@ -1102,6 +1174,9 @@ msgstr "檢查此[元素]使用的代理"
 msgid "contextMenu_enableQuickSwitch"
 msgstr "啟用快速切換"
 
+msgid "contextMenu_reloadExtension"
+msgstr "重新載入擴充功能"
+
 msgid "about_title"
 msgstr "關於"
 
@@ -1115,10 +1190,10 @@ msgid "about_experimental_warning_moz"
 msgstr "Mozilla Firefox 瀏覽器支持目前仍處於早期實驗階段！如果您遇到任何問題，請使用下方的按鈕進行回報。"
 
 msgid "about_disclaimer_networkService"
-msgstr "SwitchyOmega 不提供代理伺服器、VPN等網路服務。"
+msgstr "ProxyPilot 不提供代理伺服器、VPN等網路服務。"
 
 msgid "about_disclaimer_privacy"
-msgstr "SwitchyOmega 不會跟蹤您的上網記錄，不在頁面中插入廣告。請參見我們的"
+msgstr "ProxyPilot 不會跟蹤您的上網記錄，不在頁面中插入廣告。請參見我們的"
 "<a href='https://github.com/FelisCatus/SwitchyOmega/wiki/Privacy#%E4%B8%AD%E6%96%87'>隱私政策</a>。"
 
 msgid "about_help"
@@ -1127,10 +1202,10 @@ msgstr ""
 "%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98'>常見問題</a>。"
 
 msgid "about_copyright"
-msgstr "版權所有 2012-2017 <a href='https://github.com/FelisCatus/SwitchyOmega/blob/master/AUTHORS'>The SwitchyOmega Authors</a>. 保留所有權利。"
+msgstr "版權所有 2012-2017 <a href='https://github.com/FelisCatus/SwitchyOmega/blob/master/AUTHORS'>The ProxyPilot Authors</a>. 保留所有權利。"
 
 msgid "about_credits"
-msgstr "SwitchyOmega 的誕生離不開 <a href='https://github.com/FelisCatus/SwitchyOmega'>SwitchyOmega</a> 開源項目和其他<a href='https://github.com/FelisCatus/SwitchyOmega/blob/master/AUTHORS'>開源軟體</a>。"
+msgstr "ProxyPilot 的誕生離不開 <a href='https://github.com/FelisCatus/SwitchyOmega'>SwitchyOmega</a> 開源項目和其他<a href='https://github.com/FelisCatus/SwitchyOmega/blob/master/AUTHORS'>開源軟體</a>。"
 
 msgid "about_license"
-msgstr "SwitchyOmega 是<a href='https://www.gnu.org/philosophy/free-sw.zh-tw.html'>自由軟體</a>，使用<a href='https://www.gnu.org/licenses/gpl.html'>GNU General Public License</a> 版本 3 及以上授權。"
+msgstr "ProxyPilot 是<a href='https://www.gnu.org/philosophy/free-sw.zh-tw.html'>自由軟體</a>，使用<a href='https://www.gnu.org/licenses/gpl.html'>GNU General Public License</a> 版本 3 及以上授權。"

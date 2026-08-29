@@ -46,10 +46,17 @@ describe 'Profiles', ->
     it 'should return a valid PAC result for a proxy', ->
       proxy = {scheme: "http", host: "127.0.0.1", port: 8888}
       Profiles.pacResult(proxy).should.equal("PROXY 127.0.0.1:8888")
-    it 'should return special compatible result for SOCKS5', ->
+    it 'should return plain SOCKS5 without the SOCKS4 fallback', ->
+      proxy = {scheme: "socks5", host: "127.0.0.1", port: 8888}
+      Profiles.pacResult(proxy).should.equal("SOCKS5 127.0.0.1:8888")
+    it 'should add a SOCKS4 fallback when exporting for old clients', ->
       proxy = {scheme: "socks5", host: "127.0.0.1", port: 8888}
       compatibleResult = "SOCKS5 127.0.0.1:8888; SOCKS 127.0.0.1:8888"
-      Profiles.pacResult(proxy).should.equal(compatibleResult)
+      globalThis.OmegaPacExportSocksFallback = true
+      try
+        Profiles.pacResult(proxy).should.equal(compatibleResult)
+      finally
+        globalThis.OmegaPacExportSocksFallback = false
   describe '#byName', ->
     it 'should get profiles from builtin profiles', ->
       profile = Profiles.byName('direct')
@@ -59,6 +66,14 @@ describe 'Profiles', ->
       profile = {}
       profile = Profiles.byName('profile', {"+profile": profile})
       profile.should.equal(profile)
+    it 'should apply a custom color to a builtin profile', ->
+      options = {'-builtinProfiles': {'+direct': {color: '#123456'}}}
+      Profiles.byName('direct', options).color.should.equal('#123456')
+    it 'should restore the stock color once the override is removed', ->
+      stock = Profiles.byName('direct', {}).color
+      Profiles.byName('direct', {'-builtinProfiles': {'+direct':
+        {color: '#123456'}}}).color.should.equal('#123456')
+      Profiles.byName('direct', {}).color.should.equal(stock)
   describe '#allReferenceSet', ->
     profile = Profiles.create('test', 'VirtualProfile')
     profile.defaultProfileName = 'bogus'

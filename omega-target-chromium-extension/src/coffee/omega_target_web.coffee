@@ -8,20 +8,48 @@ angular.module('omegaTarget', []).factory 'omegaTarget', ($q) ->
       err
     else
       obj
+  # Right after a cold start, the service worker may still be waking up, or
+  # Chrome may have failed to start it and marked it invalid, refusing to
+  # wake it again for a short while - sendMessage then fails with "Receiving
+  # end does not exist" and, without a retry, the options page would hang
+  # forever waiting for a response that never comes. Retry a few times with
+  # a small backoff to ride out the ordinary wake-up race, and retry that
+  # specific error for much longer with an exponential backoff before
+  # giving up.
+  maxAttempts = 5
+  maxWorkerDownAttempts = 9
+  sendMessageWithRetry = (message, attempt, cb) ->
+    chrome.runtime.sendMessage message, (response) ->
+      err = chrome.runtime.lastError
+      if err?
+        workerDown = err.message?.indexOf('Receiving end does not exist') >= 0
+        max = if workerDown then maxWorkerDownAttempts else maxAttempts
+        if attempt < max
+          delay = if workerDown and attempt > maxAttempts
+            2000 * Math.pow(2, attempt - maxAttempts - 1)
+          else
+            100 * attempt
+          setTimeout((-> sendMessageWithRetry(message, attempt + 1, cb)),
+            delay)
+          return
+        cb?(err)
+        return
+      cb?(null, response)
+
   callBackgroundNoReply = (method, args...) ->
-    chrome.runtime.sendMessage({
+    sendMessageWithRetry({
       method: method
       args: args
       noReply: true
-    })
+    }, 1, null)
   callBackground = (method, args...) ->
     d = $q['defer']()
-    chrome.runtime.sendMessage({
+    sendMessageWithRetry({
       method: method
       args: args
-    }, (response) ->
-      if chrome.runtime.lastError?
-        d.reject(chrome.runtime.lastError)
+    }, 1, (err, response) ->
+      if err?
+        d.reject(err)
         return
       if response.error
         d.reject(decodeError(response.error))
@@ -121,6 +149,12 @@ angular.module('omegaTarget', []).factory 'omegaTarget', ($q) ->
       callBackgroundNoReply('applyProfile', name)
     addTempRule: (domain, profileName) ->
       callBackground('addTempRule', domain, profileName)
+    getTempRules: ->
+      callBackground('getTempRules')
+    removeTempRule: (domain) ->
+      callBackground('removeTempRule', domain)
+    clearTempRules: ->
+      callBackground('clearTempRules')
     addCondition: (condition, profileName) ->
       callBackground('addCondition', condition, profileName)
     addProfile: (profile) ->

@@ -27,7 +27,7 @@ along with SwitchyOmega.  If not, see <http://www.gnu.org/licenses/>.
     <link rel="stylesheet" href="css/popup.css">
   </head>
   <body ng-class="{&quot;with-condition-form&quot;: showConditionForm}">
-    <ul ng-hide="showConditionForm || proxyNotControllable || showRequestInfo" class="popup-menu-nav nav nav-pills nav-stacked">
+    <ul ng-hide="showConditionForm || proxyNotControllable || showRequestInfo || showTempRules || showNetwork" class="popup-menu-nav nav nav-pills nav-stacked">
       <li ng-repeat="profile in builtinProfiles" ng-class="{active: isActive(profile.name), &quot;bg-info&quot;: isEffective(profile.name)}" class="profile"><a href="#" role="button" ng-attr-tabindex="{{100 + $index}}" ng-click="applyProfile(profile)" title="{{getProfileTitle(profile)}}" data-shortcut="+{{profile.name}}"><span omega-profile-inline="profile" icon="getIcon(profile)" options="availableProfiles" disp-name="dispNameFilter"></span></a></li>
       <li ng-show="!requestInfoProvided &amp;&amp; !!externalProfile" ng-class="{active: isActive(&quot;&quot;), &quot;bg-info&quot;: isEffective(&quot;&quot;)}" class="profile external-profile"><a href="#" role="button" ng-click="nameExternal.open = true" title="{{getProfileTitle(externalProfile)}}" data-shortcut="external">
           <form name="nameExternalForm" ng-submit="nameExternalForm.$valid &amp;&amp; saveExternal()"><span omega-profile-icon="externalProfile" icon="getIcon(externalProfile, &quot;normal&quot;)" options="availableProfiles" disp-name="dispNameFilter"></span> <span ng-show="!nameExternal.open">{{'popup_externalProfile' | tr}}</span>
@@ -48,6 +48,8 @@ along with SwitchyOmega.  If not, see <http://www.gnu.org/licenses/>.
           <li ng-repeat="profile in validResultProfiles" ng-class="{active: profile.name == currentTempRuleProfile}" ng-show="!!currentTempRuleProfile || validResultProfiles.length == 1 || profile.name != currentProfileName"><a href="#" role="button" ng-click="addTempRule(currentDomain, profile.name)" title="{{getProfileTitle(profile)}}"><span omega-profile-inline="profile" options="availableProfiles" disp-name="dispNameFilter"></span></a></li>
         </ul>
       </li>
+      <li ng-show="requestInfo.domains.length"><a href="#" role="button" ng-click="showNetwork = true" data-shortcut="networkMonitor"><span class="glyphicon glyphicon-transfer"></span> <span>{{'popup_networkMonitor' | tr:[requestInfo.domains.length]}}</span></a></li>
+      <li ng-show="tempRules.length"><a href="#" role="button" ng-click="showTempRules = true" data-shortcut="manageTempRules"><span class="glyphicon glyphicon-list"></span> <span>{{'popup_manageTempRules' | tr:[tempRules.length]}}</span></a></li>
       <li class="divider"></li>
       <li><a href="#" role="button" ng-click="openOptions()" data-shortcut="option"><span class="glyphicon glyphicon-wrench"></span> <span>{{'popup_showOptions' | tr}}</span></a></li>
     </ul>
@@ -90,6 +92,47 @@ along with SwitchyOmega.  If not, see <http://www.gnu.org/licenses/>.
         <button ng-click="openManage()" class="btn btn-primary">{{'popup_proxyNotControllableManage' | tr}}</button>
       </p>
     </div>
+    <div ng-show="showNetwork" class="network-details">
+      <fieldset>
+        <legend>{{'popup_networkHeading' | tr}}</legend>
+        <p class="help-block">{{'popup_networkHelp' | tr}}</p>
+        <table class="table table-condensed network-table">
+          <tr>
+            <th>{{'popup_networkDomain' | tr}}</th>
+            <th>{{'popup_networkProfile' | tr}}</th>
+            <th class="text-right">{{'popup_networkRequests' | tr}}</th>
+          </tr>
+          <tr ng-repeat="domain in requestInfo.domains track by domain.domain" ng-class="{&quot;bg-warning&quot;: domain.errorCount &gt; 0}">
+            <td class="network-domain">{{domain.domain}}</td>
+            <td><span ng-if="domain.profileName" omega-profile-inline="availableProfiles[&quot;+&quot; + domain.profileName]" options="availableProfiles" disp-name="dispNameFilter"></span><span ng-if="!domain.profileName" class="text-muted">—</span></td>
+            <td class="text-right"><span ng-if="domain.errorCount &gt; 0" class="label label-warning">{{domain.errorCount}}</span> <span>{{domain.requestCount}}</span>
+            </td>
+          </tr>
+        </table>
+        <div class="condition-controls">
+          <button type="button" ng-click="returnToMenu()" class="btn btn-default">{{'dialog_close' | tr}}</button>
+        </div>
+      </fieldset>
+    </div>
+    <div ng-show="showTempRules" class="temp-rules-details">
+      <fieldset>
+        <legend>{{'popup_tempRulesHeading' | tr}}</legend>
+        <p class="help-block">{{'popup_tempRulesHelp' | tr}}</p>
+        <table class="table table-condensed temp-rules-table">
+          <tr ng-repeat="rule in tempRules track by rule.domain">
+            <td class="temp-rule-domain">{{rule.domain}}</td>
+            <td><span omega-profile-inline="availableProfiles[&quot;+&quot; + rule.profileName]" options="availableProfiles" disp-name="dispNameFilter"></span></td>
+            <td class="temp-rule-actions">
+              <button type="button" title="{{&quot;popup_removeTempRule&quot; | tr}}" ng-click="removeTempRule(rule.domain)" class="btn btn-danger btn-xs"><span class="glyphicon glyphicon-trash"></span></button>
+            </td>
+          </tr>
+        </table>
+        <div class="condition-controls">
+          <button type="button" ng-click="returnToMenu()" class="btn btn-default">{{'dialog_close' | tr}}</button>
+          <button type="button" ng-click="clearTempRules()" class="btn btn-danger pull-right">{{'popup_clearTempRules' | tr}}</button>
+        </div>
+      </fieldset>
+    </div>
     <div ng-show="showRequestInfo" class="request-info-details"></div>
     <form style="display: none;" ng-style="{display: showRequestInfo ? &quot;block&quot; : &quot;none&quot;}" ng-submit="addConditionForDomains(domainsForCondition, profileForDomains)" class="request-info-details">
       <fieldset>
@@ -99,7 +142,7 @@ along with SwitchyOmega.  If not, see <http://www.gnu.org/licenses/>.
         <div class="text-warning">{{'popup_requestErrorWarning' | tr}}</div>
         <p class="help-block">{{'popup_requestErrorWarningHelp' | tr}}</p>
         <p ng-show="!!currentProfileCanAddRule" class="help-block">{{'popup_requestErrorAddCondition' | tr}} </p>
-        <div ng-repeat="domain in requestInfo.domains track by domain.domain" class="checkbox">
+        <div ng-repeat="domain in failedDomains track by domain.domain" class="checkbox">
           <label>
             <input type="checkbox" ng-model="domainsForCondition[domain.domain]" autofocus ng-if="$index === 0">
             <input type="checkbox" ng-model="domainsForCondition[domain.domain]" ng-if="$index &gt; 0"><span class="label label-warning">{{domain.errorCount}}</span> {{domain.domain}}

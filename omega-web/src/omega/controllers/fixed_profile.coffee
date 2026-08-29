@@ -21,6 +21,8 @@ angular.module('omega').controller 'FixedProfileCtrl', ($scope, $modal,
 
   $scope.showAdvanced = false
 
+  $scope.proxyDNS = $scope.profile.proxyDNS ? true
+
   $scope.optionsForScheme = {}
   for scheme in $scope.urlSchemes
     defaultLabel =
@@ -38,7 +40,11 @@ angular.module('omega').controller 'FixedProfileCtrl', ($scope, $modal,
 
   $scope.proxyEditors = {}
 
-  socks5AuthSupported = (browser?.proxy?.register?)
+  # browser.proxy.register was removed long ago; onRequest is what actually
+  # signals that this browser can carry SOCKS5 credentials for us. Probing
+  # the dead API made socks5 auth look unsupported everywhere, which in turn
+  # made the cleanup below throw away saved credentials.
+  socks5AuthSupported = (browser?.proxy?.onRequest?)
   $scope.authSupported = {
     "http": true,
     "https": true,
@@ -71,8 +77,6 @@ angular.module('omega').controller 'FixedProfileCtrl', ($scope, $modal,
     return unless proxyEditors
     for scheme in $scope.urlSchemes
       proxy = proxyEditors[scheme]
-      if $scope.profile.auth and not $scope.authSupported[proxy.scheme]
-        delete $scope.profile.auth[proxyProperties[scheme]]
       if not proxy.scheme
         if not scheme
           proxyEditors[scheme] = {}
@@ -96,6 +100,9 @@ angular.module('omega').controller 'FixedProfileCtrl', ($scope, $modal,
     $scope.bypassList = (item.pattern for item in list).join('\n')
 
   $scope.$watch 'profile.bypassList', onBypassListChange, true
+
+  $scope.$watch 'proxyDNS', (proxyDNS) ->
+    $scope.profile.proxyDNS = proxyDNS
 
   $scope.$watch 'bypassList', (bypassList, oldList) ->
     return if not bypassList? or bypassList == oldList

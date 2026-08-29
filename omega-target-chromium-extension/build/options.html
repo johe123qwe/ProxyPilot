@@ -20,6 +20,7 @@
           <li ui-sref-active="active"><a ui-sref="io"><span class="glyphicon glyphicon-floppy-save"></span> {{'options_tab_importExport' | tr}}</a></li>
           <li class="divider"></li>
           <li class="nav-header">{{'options_navHeader_profiles' | tr}}</li>
+          <li ui-sref-active="active"><a ui-sref="builtin"><span class="glyphicon glyphicon-globe"></span> {{'options_tab_builtinProfiles' | tr}}</a></li>
           <li ng-repeat="profile in options | profiles:&quot;sorted&quot;" ui-sref-active="active" data-profile-type="{{profile.profileType}}" class="nav-profile"><a ui-sref="profile({name: profile.name})"><span omega-profile-inline="profile" options="options"></span></a></li>
           <li class="nav-new-profile"><a role="button" ng-click="newProfile()"><span class="glyphicon glyphicon-plus"></span> <span>{{'options_newProfile' | tr}}</span></a></li>
           <li class="divider"></li>

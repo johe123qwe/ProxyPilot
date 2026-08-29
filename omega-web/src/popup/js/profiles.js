@@ -2,6 +2,7 @@
   $script.ready('om-state', updateMenuByState);
   $script.ready('om-page-info', updateMenuByPageInfo);
   $script.ready(['om-state', 'om-page-info'], updateMenuByStateAndPageInfo);
+  $script.ready('om-temp-rules', updateMenuByTempRules);
 
   var profileTemplate = document.getElementById('js-profile-tpl')
     .cloneNode(true);
@@ -24,8 +25,6 @@
     'SwitchProfile': 2000,
     'RuleListProfile': 3000,
   };
-
-  return;
 
   function updateMenuByState() {
     var state = OmegaPopup.state;
@@ -61,6 +60,21 @@
         [info.errorCount]);
       document.querySelector('.om-reqinfo-text').textContent = text;
     }
+    if (info && info.domainCount > 0) {
+      document.querySelector('.om-nav-network').classList.remove('om-hidden');
+      document.querySelector('.om-network-text').textContent =
+        OmegaTargetPopup.getMessage('popup_networkMonitor',
+          [info.domainCount]);
+    }
+  }
+
+  function updateMenuByTempRules() {
+    var rules = OmegaPopup.tempRules;
+    if (!rules || !rules.length) return;
+    document.querySelector('.om-nav-manage-temprules')
+      .classList.remove('om-hidden');
+    document.querySelector('.om-manage-temprules-text').textContent =
+      OmegaTargetPopup.getMessage('popup_manageTempRules', [rules.length]);
   }
 
   function updateMenuByStateAndPageInfo() {
@@ -113,11 +127,6 @@
       document.getElementById('js-temprule').href = '#';
     }
   }
-
-    var isValidResultProfile = {};
-    validResultProfiles.forEach(function(name) {
-      isValidResultProfile['+' + name] = true;
-    });
 
   function addProfilesItems(state) {
     var systemProfileDisp = document.getElementById('js-system');

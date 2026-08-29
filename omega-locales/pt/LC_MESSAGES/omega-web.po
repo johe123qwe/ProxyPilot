@@ -15,10 +15,10 @@ msgstr ""
 "X-Generator: Weblate 5.8-dev\n"
 
 msgid "appNameShort"
-msgstr "SwitchyOmega"
+msgstr "ProxyPilot"
 
 msgid "manifest_app_name"
-msgstr "Proxy SwitchyOmega"
+msgstr "ProxyPilot"
 
 msgid "manifest_app_description"
 msgstr "Gira e troque entre vários proxies rápida e facilmente."
@@ -173,7 +173,7 @@ msgid "inputClear_restore"
 msgstr ""
 
 msgid "options_title"
-msgstr "SwitchyOmega Options"
+msgstr "ProxyPilot Options"
 
 msgid "options_experimental_badge"
 msgstr "α"
@@ -1082,6 +1082,6 @@ msgstr ""
 
 msgid "about_license"
 msgstr ""
-"SwitchyOmega é um <a href='https://www.gnu.org/philosophy/free-"
+"ProxyPilot é um <a href='https://www.gnu.org/philosophy/free-"
 "sw.en.html'>software gratuito</a> licenciado sob <a href='https://www.gnu."
 "org/licenses/gpl.html'>Licença Pública Geral GNU</a> Versão 3 ou posterior."

@@ -2,7 +2,7 @@ doctype html
 html(lang='en' ng-controller='MasterCtrl' ng-csp)
   head
     meta(charset='utf-8')
-    title(ng-bind="'options_title' | tr") SwitchyOmega Options
+    title(ng-bind="'options_title' | tr") ProxyPilot Options
     meta(name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no')
     link(rel='stylesheet' href='lib/bootstrap/css/bootstrap.min.css')
 
@@ -32,6 +32,10 @@ html(lang='en' ng-controller='MasterCtrl' ng-csp)
             | {{'options_tab_importExport' | tr}}
           li.divider
           li.nav-header {{'options_navHeader_profiles' | tr}}
+          li(ui-sref-active='active'): a(ui-sref='builtin')
+            span.glyphicon.glyphicon-globe
+            = ' '
+            | {{'options_tab_builtinProfiles' | tr}}
           li.nav-profile(ng-repeat='profile in options | profiles:"sorted"' ui-sref-active='active'
             data-profile-type="{{profile.profileType}}")
             a(ui-sref='profile({name: profile.name})')

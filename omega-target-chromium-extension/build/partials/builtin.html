@@ -1,9 +1,0 @@
-
-<div class="page-header">
-  <h2>{{'options_tab_builtinProfiles' | tr}}</h2>
-</div>
-<p class="help-block">{{'options_builtinProfilesHelp' | tr}}</p>
-<section ng-repeat="entry in builtinProfileList" class="settings-group"><span class="profile-color-editor">
-    <input type="color" ng-model="entry.color" ng-change="setColor(entry, entry.color)"/></span>
-  <h2 class="profile-name">{{'options_profileTabPrefix' | tr}}{{'profile_' + entry.name | tr}}</h2>
-</section>

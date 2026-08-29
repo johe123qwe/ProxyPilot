@@ -962,6 +962,11 @@ msgstr "在远程服务器上找不到情景模式网址对应的文件。请检
 msgid "options_profileDownloadError_HttpServerError"
 msgstr "更新时远程服务器发生错误 ($STATUS$)。"
 
+msgid "options_profileDownloadError_RedirectRefusedError"
+msgstr "该情景模式网址发生了跳转，而此情景模式设置了自定义请求头。"
+"为避免这些请求头（通常包含凭据）泄露给跳转目标，本次没有跟随跳转。"
+"请将情景模式网址改为跳转后的最终地址。"
+
 msgid "options_profileDownloadError_ContentTypeRejectedError"
 msgstr "下载的数据不符合格式！建议您在浏览器中打开情景模式网址并检查其内容。"
 

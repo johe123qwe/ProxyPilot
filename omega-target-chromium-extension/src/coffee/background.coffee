@@ -5,6 +5,16 @@ Promise.longStackTraces()
 OmegaTargetCurrent.Log = Object.create(OmegaTargetCurrent.Log)
 Log = OmegaTargetCurrent.Log
 
+# Under MV3 the service worker restarts far more often than the background
+# page used to (Chrome kills it after ~30s idle, and it comes back on the
+# next event). Only chrome.runtime.onStartup means the browser itself just
+# started - track that separately from "this service worker instance just
+# started", so startup-only behavior (like applying -startupProfileName)
+# doesn't fire on every routine service-worker respawn.
+globalThis.isBrowserRestart = false
+chrome.runtime.onStartup.addListener ->
+  globalThis.isBrowserRestart = true
+
 _writeLogToLocalStorage = (content) ->
   chrome.storage.local.get 'log', (res) ->
     log = (res.log || '') + content
@@ -154,6 +164,10 @@ actionForUrl = (url) ->
     if profile.name != currentName
       shortTitle += ' => ' + profile.name # TODO: I18n.
 
+    badgeText = null
+    if options._options['-showResultProfileOnActionBadgeText']
+      badgeText = profile.name
+
     return {
       title: chrome.i18n.getMessage('browserAction_titleWithResult', [
         currentName
@@ -165,6 +179,7 @@ actionForUrl = (url) ->
       icon: icon
       resultColor: resultColor
       profileColor: profileColor
+      badgeText: badgeText
     }
   ).catch -> return null
 

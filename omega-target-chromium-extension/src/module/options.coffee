@@ -12,6 +12,20 @@ class ChromeOptions extends OmegaTarget.Options
 
   fetchUrl: fetchUrl
 
+  constructor: (args...) ->
+    super(args...)
+    # Register the alarm dispatch unconditionally on every construction
+    # (i.e. every time the service worker restarts), instead of storing the
+    # callback in an in-memory map keyed off calls to schedule(): under MV3
+    # the service worker is killed and restarted routinely, wiping any such
+    # map, so a periodic alarm firing after a restart would silently find no
+    # callback registered and do nothing until schedule() happened to be
+    # called again.
+    chrome.alarms.onAlarm.addListener (alarm) =>
+      switch alarm.name
+        when 'omega.updateProfile'
+          @ready.then => @updateProfile()
+
   updateProfile: (args...) ->
     super(args...).then (results) ->
       error = false
@@ -170,18 +184,11 @@ class ChromeOptions extends OmegaTarget.Options
         port.onDisconnect.addListener =>
           delete @_tabRequestInfoPorts[tabId] if tabId?
 
-  _alarms: null
-  schedule: (name, periodInMinutes, callback) ->
+  schedule: (name, periodInMinutes) ->
     name = 'omega.' + name
-    if not _alarms?
-      @_alarms = {}
-      chrome.alarms.onAlarm.addListener (alarm) =>
-        @_alarms[alarm.name]?()
     if periodInMinutes < 0
-      delete @_alarms[name]
       chrome.alarms.clear(name)
     else
-      @_alarms[name] = callback
       chrome.alarms.create(name, {
         periodInMinutes: periodInMinutes
       })

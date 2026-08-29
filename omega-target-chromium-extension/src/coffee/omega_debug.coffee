@@ -31,7 +31,7 @@ globalObj.OmegaDebug =
       chrome.storage.local.set {'omega.local.syncOptions': '"conflict"'}, ->
         chrome.runtime.reload()
   reportIssue: ->
-    url = 'https://github.com/FelisCatus/SwitchyOmega/issues/new?title=&body='
+    url = 'https://github.com/johe123qwe/ProxyPilot/issues/new?title=&body='
     finalUrl = url
     try
       projectVersion = OmegaDebug.getProjectVersion()
@@ -46,7 +46,7 @@ globalObj.OmegaDebug =
       body ||= """
         \n\n
         <!-- Please write your comment ABOVE this line. -->
-        SwitchyOmega #{env.projectVersion}
+        ProxyPilot #{env.projectVersion}
         #{env.userAgent}
       """
       finalUrl = url + encodeURIComponent(body)

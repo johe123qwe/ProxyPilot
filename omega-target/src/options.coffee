@@ -160,7 +160,12 @@ class Options
   ###
   init: ->
     @ready = @loadOptions().then(=>
-      if @_options['-startupProfileName']
+      # -startupProfileName should only apply when the browser itself just
+      # started, not every time Chrome respawns this service worker after
+      # killing it for being idle (which happens routinely under MV3) -
+      # otherwise the profile you picked keeps getting overridden by the
+      # startup profile every time the worker wakes back up.
+      if globalThis.isBrowserRestart and @_options['-startupProfileName']
         @applyProfile(@_options['-startupProfileName'])
       else
         @_state.get({
@@ -338,6 +343,10 @@ class Options
               value.revision)
             continue if result >= 0
           profilesChanged = true
+        else if key == '-builtinProfiles'
+          # Recolors the builtin profiles, so the icon has to be redrawn even
+          # though no profile in the '+' namespace changed.
+          currentProfileAffected = 'changed'
         @_options[key] = value
       if not currentProfileAffected and @_watchingProfiles[key]
         currentProfileAffected = 'changed'
@@ -380,8 +389,7 @@ class Options
       if changes['-enableQuickSwitch']? or quickSwitchProfiles?
         @reloadQuickSwitch()
       if changes['-downloadInterval']?
-        @schedule 'updateProfile', @_options['-downloadInterval'], =>
-          @updateProfile()
+        @schedule 'updateProfile', @_options['-downloadInterval']
       if changes['-showInspectMenu']? or changes == @_options
         showMenu = @_options['-showInspectMenu']
         if not showMenu?
@@ -619,13 +627,16 @@ class Options
   ###*
   # Schedule a task that runs every periodInMinutes.
   # In base class, this method is not implemented and will not do anything.
+  # Subclasses are expected to know what to run for a given schedule name
+  # (e.g. by dispatching on it from a persistent alarm listener registered
+  # once, rather than storing a callback in memory that would be lost if the
+  # process implementing this class is restarted).
   # @param {string} name The name of the schedule. If there is a previous
   # schedule with the same name, it will be replaced by the new one.
   # @param {number} periodInMinutes The interval of the schedule
-  # @param {function} callback The callback to call when the task runs
   # @returns {Promise} A promise which is fulfilled when the schedule is set
   ###
-  schedule: (name, periodInMinutes, callback) ->
+  schedule: (name, periodInMinutes) ->
     Promise.resolve()
 
   ###*
@@ -661,7 +672,11 @@ class Options
       url = OmegaPac.Profiles.updateUrl(profile)
       if url
         type_hints = OmegaPac.Profiles.updateContentTypeHints(profile)
-        fetchResult = @fetchUrl(url, opt_bypass_cache, type_hints)
+        headers = {}
+        if profile.headers
+          for header in profile.headers when header.name
+            headers[header.name] = header.value
+        fetchResult = @fetchUrl(url, headers, opt_bypass_cache, type_hints)
         results[key] = fetchResult.then((data) =>
           # Errors and unsuccessful response codes shoud have been already
           # rejected by fetchUrl and will not end up here.
@@ -685,11 +700,12 @@ class Options
   # Make an HTTP GET request to fetch the content of the url.
   # In base class, this method is not implemented and will always reject.
   # @param {string} url The name of the profiles,
+  # @param {?{}} headers Extra request headers as a name-value map
   # @param {?bool} opt_bypass_cache Do not read from the cache if true
   # @param {?string} opt_type_hints MIME type hints for downloaded content.
   # @returns {Promise<String>} The text content fetched from the url
   ###
-  fetchUrl: (url, opt_bypass_cache, opt_type_hints) ->
+  fetchUrl: (url, headers, opt_bypass_cache, opt_type_hints) ->
     Promise.reject new Error('not implemented')
 
   _replaceRefChanges: (fromName, toName, changes) ->

@@ -1,20 +1,58 @@
+// Right after a cold start (browser/profile launch), the service worker may
+// still be waking up, or Chrome may have failed to start it and marked it
+// invalid, refusing to wake it again for a short while - sendMessage then
+// fails with "Receiving end does not exist" and, without a retry, whatever
+// we tried to tell the background page (e.g. the profile the user just
+// picked) is silently dropped. Retry a few times with a small backoff to
+// ride out the ordinary wake-up race, and retry that specific error for
+// much longer with an exponential backoff before giving up.
+var SEND_MESSAGE_MAX_ATTEMPTS = 5;
+var SEND_MESSAGE_MAX_WORKER_DOWN_ATTEMPTS = 9;
+
+function sendMessageWithRetry(message, attempt, cb) {
+  chrome.runtime.sendMessage(message, function(response) {
+    var err = chrome.runtime.lastError;
+    if (err != null) {
+      var workerDown =
+        err.message && err.message.indexOf('Receiving end does not exist') >= 0;
+      var maxAttempts =
+        workerDown ? SEND_MESSAGE_MAX_WORKER_DOWN_ATTEMPTS :
+          SEND_MESSAGE_MAX_ATTEMPTS;
+      if (attempt < maxAttempts) {
+        var delay = (workerDown && attempt > SEND_MESSAGE_MAX_ATTEMPTS) ?
+          2000 * Math.pow(2, attempt - SEND_MESSAGE_MAX_ATTEMPTS - 1) :
+          100 * attempt;
+        setTimeout(function() {
+          sendMessageWithRetry(message, attempt + 1, cb);
+        }, delay);
+        return;
+      }
+      return cb(err);
+    }
+    return cb(null, response);
+  });
+}
+
 function callBackgroundNoReply(method, args, cb) {
-  chrome.runtime.sendMessage({
+  // Fire-and-forget messages don't wait for background processing, so keep
+  // closing the popup etc. immediately as before - but still retry the
+  // delivery itself in the background, so a cold-start service worker
+  // doesn't silently swallow the action.
+  sendMessageWithRetry({
     method: method,
     args: args,
     noReply: true,
     refreshActivePage: true,
-  });
+  }, 1, function() {});
   if (cb) return cb();
 }
 
 function callBackground(method, args, cb) {
-  chrome.runtime.sendMessage({
+  sendMessageWithRetry({
     method: method,
     args: args,
-  }, function(response) {
-    if (chrome.runtime.lastError != null)
-      return cb && cb(chrome.runtime.lastError)
+  }, 1, function(err, response) {
+    if (err != null) return cb && cb(err)
     if (response.error) return cb && cb(response.error)
     return cb && cb(null, response.result)
   });

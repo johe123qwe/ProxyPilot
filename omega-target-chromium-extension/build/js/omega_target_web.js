@@ -3,7 +3,7 @@
     __hasProp = {}.hasOwnProperty;
 
   angular.module('omegaTarget', []).factory('omegaTarget', function($q) {
-    var callBackground, callBackgroundNoReply, connectBackground, decodeError, isChromeUrl, omegaTarget, optionsChangeCallback, prefix, requestInfoCallback, urlParser;
+    var callBackground, callBackgroundNoReply, connectBackground, decodeError, isChromeUrl, maxAttempts, maxWorkerDownAttempts, omegaTarget, optionsChangeCallback, prefix, requestInfoCallback, sendMessageWithRetry, urlParser;
     decodeError = function(obj) {
       var err;
       if (obj._error === 'error') {
@@ -16,25 +16,49 @@
         return obj;
       }
     };
+    maxAttempts = 5;
+    maxWorkerDownAttempts = 9;
+    sendMessageWithRetry = function(message, attempt, cb) {
+      return chrome.runtime.sendMessage(message, function(response) {
+        var delay, err, max, workerDown, _ref;
+        err = chrome.runtime.lastError;
+        if (err != null) {
+          workerDown = ((_ref = err.message) != null ? _ref.indexOf('Receiving end does not exist') : void 0) >= 0;
+          max = workerDown ? maxWorkerDownAttempts : maxAttempts;
+          if (attempt < max) {
+            delay = workerDown && attempt > maxAttempts ? 2000 * Math.pow(2, attempt - maxAttempts - 1) : 100 * attempt;
+            setTimeout((function() {
+              return sendMessageWithRetry(message, attempt + 1, cb);
+            }), delay);
+            return;
+          }
+          if (typeof cb === "function") {
+            cb(err);
+          }
+          return;
+        }
+        return typeof cb === "function" ? cb(null, response) : void 0;
+      });
+    };
     callBackgroundNoReply = function() {
       var args, method;
       method = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-      return chrome.runtime.sendMessage({
+      return sendMessageWithRetry({
         method: method,
         args: args,
         noReply: true
-      });
+      }, 1, null);
     };
     callBackground = function() {
       var args, d, method;
       method = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
       d = $q['defer']();
-      chrome.runtime.sendMessage({
+      sendMessageWithRetry({
         method: method,
         args: args
-      }, function(response) {
-        if (chrome.runtime.lastError != null) {
-          d.reject(chrome.runtime.lastError);
+      }, 1, function(err, response) {
+        if (err != null) {
+          d.reject(err);
           return;
         }
         if (response.error) {
@@ -150,7 +174,7 @@
       openOptions: function(hash) {
         var d, options_url;
         d = $q['defer']();
-        options_url = chrome.runtime.getURL('options.html');
+        options_url = chrome.extension.getURL('options.html');
         chrome.tabs.query({
           url: options_url
         }, function(tabs) {

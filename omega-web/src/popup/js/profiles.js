@@ -25,8 +25,6 @@
     'RuleListProfile': 3000,
   };
 
-  return;
-
   function updateMenuByState() {
     var state = OmegaPopup.state;
     if (state.proxyNotControllable) {
@@ -113,11 +111,6 @@
       document.getElementById('js-temprule').href = '#';
     }
   }
-
-    var isValidResultProfile = {};
-    validResultProfiles.forEach(function(name) {
-      isValidResultProfile['+' + name] = true;
-    });
 
   function addProfilesItems(state) {
     var systemProfileDisp = document.getElementById('js-system');

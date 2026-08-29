@@ -58,6 +58,10 @@ angular.module('omega').config ($stateProvider, $urlRouterProvider,
       url: '/io'
       templateUrl: 'partials/io.html'
       controller: 'IoCtrl'
+    ).state('builtin',
+      url: '/builtin'
+      templateUrl: 'partials/builtin.html'
+      controller: 'BuiltinCtrl'
     ).state('profile',
       url: '/profile/*name'
       templateUrl: 'partials/profile.html'

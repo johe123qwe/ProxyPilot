@@ -60,7 +60,7 @@
     },
     reportIssue: function() {
       var body, e, env, extensionVersion, finalUrl, projectVersion, url;
-      url = 'https://github.com/YOUR_GITHUB/ProxyPilot/issues/new?title=&body=';
+      url = 'https://github.com/johe123qwe/ProxyPilot/issues/new?title=&body=';
       finalUrl = url;
       try {
         projectVersion = OmegaDebug.getProjectVersion();

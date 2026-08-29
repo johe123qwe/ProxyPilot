@@ -11,6 +11,33 @@ class AST_Raw extends U2.AST_SymbolRef
     U2.AST_SymbolRef.call(this, name: raw)
     @aborts = -> false
 
+# Appending a "; SOCKS host:port" fallback after SOCKS5 is meant for ancient
+# clients that don't understand the SOCKS5 token, but SOCKS is SOCKS4 - so
+# a browser that fails the SOCKS5 leg for any reason (a rule the proxy
+# refuses, a momentary error) silently falls back to SOCKS4a and hangs. Only
+# emit the fallback for PAC files the user explicitly exports for such a
+# client; the extension's own scripts get plain SOCKS5.
+needsSocks4Fallback = (proxy = {}) ->
+  proxy.scheme == 'socks5' and !!globalThis.OmegaPacExportSocksFallback
+
+# The builtin profiles are shared singletons, so applying a user's color
+# override to one mutates it for every caller. Remember the stock colors up
+# front so clearing an override can restore them, instead of treating the
+# already-overridden value as the default.
+defaultBuiltinColors = null
+applyBuiltinColor = (profile, options) ->
+  return unless profile
+  key = exports.nameAsKey(profile)
+  return unless exports.builtinProfiles[key]
+  defaultBuiltinColors ?= do ->
+    colors = {}
+    for own k, p of exports.builtinProfiles
+      colors[k] = p.color
+    colors
+  profile.color = options?['-builtinProfiles']?[key]?.color ?
+    defaultBuiltinColors[key]
+  return
+
 module.exports = exports =
   builtinProfiles:
     '+direct':
@@ -62,7 +89,7 @@ module.exports = exports =
 
   pacResult: (proxy) ->
     if proxy
-      if proxy.scheme == 'socks5'
+      if needsSocks4Fallback(proxy)
         "SOCKS5 #{proxy.host}:#{proxy.port}; SOCKS #{proxy.host}:#{proxy.port}"
       else
         "#{exports.pacProtocols[proxy.scheme]} #{proxy.host}:#{proxy.port}"
@@ -79,10 +106,12 @@ module.exports = exports =
     if typeof profileName == 'string'
       key = exports.nameAsKey(profileName)
       profileName = exports.builtinProfiles[key] ? options[key]
+      applyBuiltinColor(profileName, options)
     profileName
   byKey: (key, options) ->
     if typeof key == 'string'
       key = exports.builtinProfiles[key] ? options[key]
+      applyBuiltinColor(key, options)
     key
 
   each: (options, callback) ->
@@ -91,6 +120,7 @@ module.exports = exports =
       callback(key, profile)
     for key, profile of exports.builtinProfiles
       if key.charCodeAt(0) == charCodePlus
+        applyBuiltinColor(profile, options)
         callback(key, profile)
 
   profileResult: (profileName) ->

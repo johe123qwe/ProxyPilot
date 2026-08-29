@@ -68,6 +68,10 @@
       url: '/io',
       templateUrl: 'partials/io.html',
       controller: 'IoCtrl'
+    }).state('builtin', {
+      url: '/builtin',
+      templateUrl: 'partials/builtin.html',
+      controller: 'BuiltinCtrl'
     }).state('profile', {
       url: '/profile/*name',
       templateUrl: 'partials/profile.html',
@@ -174,8 +178,40 @@
 }).call(this);
 
 (function() {
+  var __hasProp = {}.hasOwnProperty;
+
+  angular.module('omega').controller('BuiltinCtrl', function($scope, $rootScope, builtinProfiles) {
+    var key, profile;
+    $scope.builtinProfileList = (function() {
+      var _results;
+      _results = [];
+      for (key in builtinProfiles) {
+        if (!__hasProp.call(builtinProfiles, key)) continue;
+        profile = builtinProfiles[key];
+        _results.push({
+          key: key,
+          name: profile.name,
+          color: profile.color
+        });
+      }
+      return _results;
+    })();
+    return $scope.setColor = function(entry, color) {
+      var overrides, _ref;
+      entry.color = color;
+      overrides = angular.copy((_ref = $rootScope.options['-builtinProfiles']) != null ? _ref : {});
+      overrides[entry.key] = {
+        color: color
+      };
+      return $rootScope.options['-builtinProfiles'] = overrides;
+    };
+  });
+
+}).call(this);
+
+(function() {
   angular.module('omega').controller('FixedProfileCtrl', function($scope, $modal, trFilter) {
-    var defaultLabel, defaultPort, onBypassListChange, onProxyChange, proxyProperties, scheme, socks5AuthSupported, _fn, _i, _j, _len, _len1, _ref, _ref1, _ref2;
+    var defaultLabel, defaultPort, onBypassListChange, onProxyChange, proxyProperties, scheme, socks5AuthSupported, _fn, _i, _j, _len, _len1, _ref, _ref1, _ref2, _ref3;
     $scope.urlSchemes = ['', 'http', 'https', 'ftp'];
     $scope.urlSchemeDefault = 'fallbackProxy';
     proxyProperties = {
@@ -197,10 +233,11 @@
       'socks5': 1080
     };
     $scope.showAdvanced = false;
+    $scope.proxyDNS = (_ref = $scope.profile.proxyDNS) != null ? _ref : true;
     $scope.optionsForScheme = {};
-    _ref = $scope.urlSchemes;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      scheme = _ref[_i];
+    _ref1 = $scope.urlSchemes;
+    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+      scheme = _ref1[_i];
       defaultLabel = scheme ? trFilter('options_protocol_useDefault') : trFilter('options_protocol_direct');
       $scope.optionsForScheme[scheme] = [
         {
@@ -222,23 +259,23 @@
       ];
     }
     $scope.proxyEditors = {};
-    socks5AuthSupported = ((typeof browser !== "undefined" && browser !== null ? (_ref1 = browser.proxy) != null ? _ref1.register : void 0 : void 0) != null);
+    socks5AuthSupported = ((typeof browser !== "undefined" && browser !== null ? (_ref2 = browser.proxy) != null ? _ref2.onRequest : void 0 : void 0) != null);
     $scope.authSupported = {
       "http": true,
       "https": true,
       "socks5": socks5AuthSupported
     };
     $scope.isProxyAuthActive = function(scheme) {
-      var _ref2;
-      return ((_ref2 = $scope.profile.auth) != null ? _ref2[proxyProperties[scheme]] : void 0) != null;
+      var _ref3;
+      return ((_ref3 = $scope.profile.auth) != null ? _ref3[proxyProperties[scheme]] : void 0) != null;
     };
     $scope.editProxyAuth = function(scheme) {
-      var auth, prop, proxy, scope, _ref2;
+      var auth, prop, proxy, scope, _ref3;
       prop = proxyProperties[scheme];
       proxy = $scope.profile[prop];
       scope = $scope.$new('isolate');
       scope.proxy = proxy;
-      auth = (_ref2 = $scope.profile.auth) != null ? _ref2[prop] : void 0;
+      auth = (_ref3 = $scope.profile.auth) != null ? _ref3[prop] : void 0;
       scope.auth = auth && angular.copy(auth);
       scope.authSupported = $scope.authSupported[proxy.scheme];
       scope.protocolDisp = proxy.scheme;
@@ -261,18 +298,15 @@
       });
     };
     onProxyChange = function(proxyEditors, oldProxyEditors) {
-      var proxy, _base, _j, _len1, _name, _ref2, _ref3, _results;
+      var proxy, _base, _j, _len1, _name, _ref3, _ref4, _results;
       if (!proxyEditors) {
         return;
       }
-      _ref2 = $scope.urlSchemes;
+      _ref3 = $scope.urlSchemes;
       _results = [];
-      for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
-        scheme = _ref2[_j];
+      for (_j = 0, _len1 = _ref3.length; _j < _len1; _j++) {
+        scheme = _ref3[_j];
         proxy = proxyEditors[scheme];
-        if ($scope.profile.auth && !$scope.authSupported[proxy.scheme]) {
-          delete $scope.profile.auth[proxyProperties[scheme]];
-        }
         if (!proxy.scheme) {
           if (!scheme) {
             proxyEditors[scheme] = {};
@@ -289,14 +323,14 @@
             proxy.port = defaultPort[proxy.scheme];
           }
           if (proxy.host == null) {
-            proxy.host = (_ref3 = proxyEditors[''].host) != null ? _ref3 : 'example.com';
+            proxy.host = (_ref4 = proxyEditors[''].host) != null ? _ref4 : 'example.com';
           }
         }
         _results.push((_base = $scope.profile)[_name = proxyProperties[scheme]] != null ? _base[_name] : _base[_name] = proxy);
       }
       return _results;
     };
-    _ref2 = $scope.urlSchemes;
+    _ref3 = $scope.urlSchemes;
     _fn = function(scheme) {
       return $scope.$watch((function() {
         return $scope.profile[proxyProperties[scheme]];
@@ -307,8 +341,8 @@
         return $scope.proxyEditors[scheme] = proxy != null ? proxy : {};
       });
     };
-    for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
-      scheme = _ref2[_j];
+    for (_j = 0, _len1 = _ref3.length; _j < _len1; _j++) {
+      scheme = _ref3[_j];
       _fn(scheme);
     }
     $scope.$watch('proxyEditors', onProxyChange, true);
@@ -325,17 +359,20 @@
       })()).join('\n');
     };
     $scope.$watch('profile.bypassList', onBypassListChange, true);
+    $scope.$watch('proxyDNS', function(proxyDNS) {
+      return $scope.profile.proxyDNS = proxyDNS;
+    });
     return $scope.$watch('bypassList', function(bypassList, oldList) {
       var entry;
       if ((bypassList == null) || bypassList === oldList) {
         return;
       }
       return $scope.profile.bypassList = (function() {
-        var _k, _len2, _ref3, _results;
-        _ref3 = bypassList.split(/\r?\n/);
+        var _k, _len2, _ref4, _results;
+        _ref4 = bypassList.split(/\r?\n/);
         _results = [];
-        for (_k = 0, _len2 = _ref3.length; _k < _len2; _k++) {
-          entry = _ref3[_k];
+        for (_k = 0, _len2 = _ref4.length; _k < _len2; _k++) {
+          entry = _ref4[_k];
           if (entry) {
             _results.push({
               conditionType: "BypassCondition",
@@ -477,8 +514,9 @@
     $rootScope.revertOptions = function() {
       return $window.location.reload();
     };
-    $rootScope.exportScript = function(name) {
+    $rootScope.exportScript = function(event, name) {
       var getProfileName;
+      $window.OmegaPacExportSocksFallback = !!(event != null ? event.shiftKey : void 0);
       getProfileName = name ? $q.when(name) : omegaTarget.state('currentProfileName');
       return getProfileName.then(function(profileName) {
         var ast, blob, fileName, missingProfile, pac, profile, profileNotFound, _ref2;
@@ -515,6 +553,8 @@
             });
           });
         }
+      })["finally"](function() {
+        return $window.OmegaPacExportSocksFallback = false;
       });
     };
     diff = jsondiffpatch.create({
@@ -934,7 +974,7 @@
       return $scope.pacUrlIsFile = $scope.isFileUrl(profile.pacUrl);
     };
     $scope.$watch('profile', onProfileChange, true);
-    return $scope.editProxyAuth = function(scheme) {
+    $scope.editProxyAuth = function(scheme) {
       var auth, prop, scope, _ref;
       prop = 'all';
       auth = (_ref = $scope.profile.auth) != null ? _ref[prop] : void 0;
@@ -957,6 +997,19 @@
           return $scope.profile.auth[prop] = auth;
         }
       });
+    };
+    $scope.addHeader = function() {
+      var _base;
+      if ((_base = $scope.profile).headers == null) {
+        _base.headers = [];
+      }
+      return $scope.profile.headers.push({
+        name: '',
+        value: ''
+      });
+    };
+    return $scope.removeHeader = function(index) {
+      return $scope.profile.headers.splice(index, 1);
     };
   });
 
@@ -1706,7 +1759,7 @@
         }
       }
     });
-    return omegaTarget.state(stateEditorKey).then(function(opts) {
+    omegaTarget.state(stateEditorKey).then(function(opts) {
       var getState;
       if (opts != null ? opts.editSource : void 0) {
         return $scope.toggleSource();
@@ -1727,6 +1780,19 @@
         });
       }
     });
+    $scope.addHeader = function() {
+      var _base;
+      if ((_base = $scope.attached).headers == null) {
+        _base.headers = [];
+      }
+      return $scope.attached.headers.push({
+        name: '',
+        value: ''
+      });
+    };
+    return $scope.removeHeader = function(index) {
+      return $scope.attached.headers.splice(index, 1);
+    };
   });
 
 }).call(this);

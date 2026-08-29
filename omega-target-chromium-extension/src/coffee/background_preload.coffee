@@ -29,6 +29,12 @@ if chrome.contextMenus?
     contexts: ["action"]
   })
 
+  chrome.contextMenus.create({
+    id: 'reloadExtension'
+    title: chrome.i18n.getMessage('contextMenu_reloadExtension')
+    contexts: ["action"]
+  })
+
   chrome.contextMenus.onClicked.addListener (info, tab) ->
     switch info.menuItemId
       when 'enableQuickSwitch'
@@ -37,3 +43,5 @@ if chrome.contextMenus?
         globalObj.OmegaDebug?.reportIssue()
       when 'errorLog'
         globalObj.OmegaDebug?.downloadLog()
+      when 'reloadExtension'
+        chrome.runtime.reload()

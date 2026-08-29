@@ -55,10 +55,14 @@ class ChromeTabs
           tabId: tab.id
         })
         @clearIcon tab.id
+        (chrome.browserAction || chrome.action)?.setBadgeText?(
+          text: '', tabId: tab.id)
       return
     @actionForUrl(tab.url).then (action) =>
       if not action
         @clearIcon tab.id
+        (chrome.browserAction || chrome.action)?.setBadgeText?(
+          text: '', tabId: tab.id)
         return
       @setIcon(action.icon, tab.id)
       actionApi = chrome.browserAction || chrome.action
@@ -66,6 +70,10 @@ class ChromeTabs
         actionApi.setTitle({title: action.title, tabId: tab.id})
       else
         actionApi?.setTitle?({title: action.shortTitle, tabId: tab.id})
+      actionApi?.setBadgeText?(
+        text: (action.badgeText || '').substring(0, 4)
+        tabId: tab.id
+      )
 
   setTabBadge: (tab, badge) ->
     @_badgeTab ?= {}

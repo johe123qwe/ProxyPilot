@@ -52,6 +52,10 @@ module.exports = class ExternalApi
         chrome.browserAction.setPopup?({popup: 'popup/index.html'})
         port.postMessage({action: 'state', state: 'disabled'})
       when 'enable'
+        # Same permission as 'disable': this is its counterpart, and it
+        # applies a profile and clears the not-controllable state, so it
+        # should not be reachable by any extension that happens to connect.
+        return unless @checkPerm(port, 16)
         @reenable()
         port.postMessage({action: 'state', state: 'enabled'})
       when 'getOptions'

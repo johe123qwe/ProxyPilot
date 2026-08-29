@@ -6,6 +6,12 @@ replacer = (key, value) ->
     # Hide values for a few keys with privacy concerns.
     when "username", "password", "host", "port"
       return "<secret>"
+    # A profile's custom request headers routinely carry credentials for the
+    # rule list or PAC URL (Authorization, X-Api-Key, a session cookie...).
+    # Replace the whole array rather than the individual values: the log is
+    # written to storage and can be exported or pasted into a bug report.
+    when "headers"
+      return "<secret>"
     else
       value
 

@@ -206,6 +206,15 @@
       addTempRule: function(domain, profileName) {
         return callBackground('addTempRule', domain, profileName);
       },
+      getTempRules: function() {
+        return callBackground('getTempRules');
+      },
+      removeTempRule: function(domain) {
+        return callBackground('removeTempRule', domain);
+      },
+      clearTempRules: function() {
+        return callBackground('clearTempRules');
+      },
       addCondition: function(condition, profileName) {
         return callBackground('addCondition', condition, profileName);
       },

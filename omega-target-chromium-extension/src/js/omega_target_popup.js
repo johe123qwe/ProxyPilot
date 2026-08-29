@@ -107,6 +107,9 @@ OmegaTargetPopup = {
   addTempRule: function(domain, profileName, cb) {
     callBackgroundNoReply('addTempRule', [domain, profileName], cb);
   },
+  getTempRules: function(cb) {
+    callBackground('getTempRules', [], cb);
+  },
   openManage: function(domain, profileName, cb) {
     chrome.tabs.create({
       url: 'chrome://extensions/?id=' + chrome.runtime.id,

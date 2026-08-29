@@ -162,10 +162,10 @@ class ChromeOptions extends OmegaTarget.Options
           info.badgeSet = false
           action = chrome.browserAction || chrome.action
           action?.setBadgeText?(text: '', tabId: tabId)
-        @_tabRequestInfoPorts[tabId]?.postMessage({
-          errorCount: info.errorCount
-          summary: info.summary
-        })
+        port = @_tabRequestInfoPorts[tabId]
+        if port
+          @_summaryWithProfiles(info.summary).then (summary) ->
+            port.postMessage({errorCount: info.errorCount, summary: summary})
 
       chrome.runtime.onConnect.addListener (rawPort) =>
         return unless rawPort.name == 'tabRequestInfo'
@@ -177,12 +177,32 @@ class ChromeOptions extends OmegaTarget.Options
           @_tabRequestInfoPorts[tabId] = port
           info = @_requestMonitor.tabInfo[tabId]
           if info
-            port.postMessage({
-              errorCount: info.errorCount
-              summary: info.summary
-            })
+            @_summaryWithProfiles(info.summary).then (summary) ->
+              port.postMessage(
+                {errorCount: info.errorCount, summary: summary})
         port.onDisconnect.addListener =>
           delete @_tabRequestInfoPorts[tabId] if tabId?
+
+  # Annotate each summarized domain with the profile the current rules would
+  # send it to, so the popup can show where a request actually goes rather
+  # than only whether it failed.
+  _summaryWithProfiles: (summary) ->
+    result = {}
+    pending = []
+    for own id, item of summary
+      entry = result[id] = {
+        errorCount: item.errorCount
+        requestCount: item.requestCount
+      }
+      continue unless item.sampleUrl
+      do (entry, url = item.sampleUrl) =>
+        pending.push Promise.try(=>
+          @matchProfile(OmegaPac.Conditions.requestFromUrl(url))
+        ).then(({profile}) ->
+          entry.profileName = profile.name if profile?.name
+          return
+        ).catch(-> return)
+    Promise.all(pending).return(result)
 
   schedule: (name, periodInMinutes) ->
     name = 'omega.' + name
@@ -254,8 +274,14 @@ class ChromeOptions extends OmegaTarget.Options
     chrome.tabs.create url: chrome.extension.getURL('options.html')
 
   getPageInfo: ({tabId, url}) ->
-    errorCount = @_requestMonitor?.tabInfo[tabId]?.errorCount
-    result = if errorCount then {errorCount: errorCount} else null
+    tabInfo = @_requestMonitor?.tabInfo[tabId]
+    errorCount = tabInfo?.errorCount
+    domainCount = if tabInfo?.summary then Object.keys(tabInfo.summary).length
+    result =
+      if errorCount or domainCount
+        {errorCount: errorCount, domainCount: domainCount}
+      else
+        null
     getBadge = new Promise (resolve, reject) ->
       action = chrome.browserAction || chrome.action
       if not action?.getBadgeText?
@@ -287,6 +313,7 @@ class ChromeOptions extends OmegaTarget.Options
         domain: domain
         tempRuleProfileName: @queryTempRule(domain)
         errorCount: errorCount
+        domainCount: domainCount
       }
 
 module.exports = ChromeOptions

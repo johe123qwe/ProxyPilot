@@ -25,7 +25,7 @@ html(lang='en' ng-app='omegaPopup' ng-controller='PopupCtrl' ng-csp)
     link(rel='stylesheet' href='lib/bootstrap/css/bootstrap.min.css')
     link(rel='stylesheet' href='css/popup.css')
   body(ng-class='{"with-condition-form": showConditionForm}')
-    ul.popup-menu-nav.nav.nav-pills.nav-stacked(ng-hide='showConditionForm || proxyNotControllable || showRequestInfo')
+    ul.popup-menu-nav.nav.nav-pills.nav-stacked(ng-hide='showConditionForm || proxyNotControllable || showRequestInfo || showTempRules || showNetwork')
       li.profile(ng-repeat='profile in builtinProfiles' ng-class='{active: isActive(profile.name), "bg-info": isEffective(profile.name)}')
         a(href='#' role='button' ng-attr-tabindex='{{100 + $index}}' ng-click='applyProfile(profile)' title='{{getProfileTitle(profile)}}'
           data-shortcut='+{{profile.name}}')
@@ -75,6 +75,18 @@ html(lang='en' ng-app='omegaPopup' ng-controller='PopupCtrl' ng-csp)
             ng-show='!!currentTempRuleProfile || validResultProfiles.length == 1 || profile.name != currentProfileName')
             a(href='#' role='button' ng-click='addTempRule(currentDomain, profile.name)' title='{{getProfileTitle(profile)}}')
               span(omega-profile-inline='profile' options='availableProfiles' disp-name='dispNameFilter')
+      li(ng-show='requestInfo.domains.length')
+        a(href='#' role='button' ng-click='showNetwork = true'
+          data-shortcut='networkMonitor')
+          span.glyphicon.glyphicon-transfer
+          = ' '
+          span {{'popup_networkMonitor' | tr:[requestInfo.domains.length]}}
+      li(ng-show='tempRules.length')
+        a(href='#' role='button' ng-click='showTempRules = true'
+          data-shortcut='manageTempRules')
+          span.glyphicon.glyphicon-list
+          = ' '
+          span {{'popup_manageTempRules' | tr:[tempRules.length]}}
       li.divider
       li
         a(href='#' role='button' ng-click='openOptions()' data-shortcut='option')
@@ -121,6 +133,51 @@ html(lang='en' ng-app='omegaPopup' ng-controller='PopupCtrl' ng-csp)
       p.proxy-not-controllable-controls
         button.btn.btn-default(ng-click='closePopup()') {{'dialog_cancel' | tr}}
         button.btn.btn-primary(ng-click='openManage()') {{'popup_proxyNotControllableManage' | tr}}
+    div.network-details(ng-show='showNetwork')
+      fieldset
+        legend {{'popup_networkHeading' | tr}}
+        p.help-block {{'popup_networkHelp' | tr}}
+        table.table.table-condensed.network-table
+          tr
+            th {{'popup_networkDomain' | tr}}
+            th {{'popup_networkProfile' | tr}}
+            th.text-right {{'popup_networkRequests' | tr}}
+          tr(ng-repeat='domain in requestInfo.domains track by domain.domain'
+            ng-class='{"bg-warning": domain.errorCount > 0}')
+            td.network-domain {{domain.domain}}
+            td
+              span(ng-if='domain.profileName'
+                omega-profile-inline='availableProfiles["+" + domain.profileName]'
+                options='availableProfiles' disp-name='dispNameFilter')
+              span.text-muted(ng-if='!domain.profileName') —
+            td.text-right
+              span.label.label-warning(ng-if='domain.errorCount > 0')
+                | {{domain.errorCount}}
+              = ' '
+              span {{domain.requestCount}}
+        div.condition-controls
+          button.btn.btn-default(type='button' ng-click='returnToMenu()')
+            | {{'dialog_close' | tr}}
+    div.temp-rules-details(ng-show='showTempRules')
+      fieldset
+        legend {{'popup_tempRulesHeading' | tr}}
+        p.help-block {{'popup_tempRulesHelp' | tr}}
+        table.table.table-condensed.temp-rules-table
+          tr(ng-repeat='rule in tempRules track by rule.domain')
+            td.temp-rule-domain {{rule.domain}}
+            td
+              span(omega-profile-inline='availableProfiles["+" + rule.profileName]'
+                options='availableProfiles' disp-name='dispNameFilter')
+            td.temp-rule-actions
+              button.btn.btn-danger.btn-xs(type='button'
+                title='{{"popup_removeTempRule" | tr}}'
+                ng-click='removeTempRule(rule.domain)')
+                span.glyphicon.glyphicon-trash
+        div.condition-controls
+          button.btn.btn-default(type='button' ng-click='returnToMenu()')
+            | {{'dialog_close' | tr}}
+          button.btn.btn-danger.pull-right(type='button'
+            ng-click='clearTempRules()') {{'popup_clearTempRules' | tr}}
     div.request-info-details(ng-show='showRequestInfo')
     form.request-info-details(style='display: none;'
       ng-style='{display: showRequestInfo ? "block" : "none"}'
@@ -136,7 +193,7 @@ html(lang='en' ng-app='omegaPopup' ng-controller='PopupCtrl' ng-csp)
         .text-warning {{'popup_requestErrorWarning' | tr}}
         p.help-block {{'popup_requestErrorWarningHelp' | tr}}
         p.help-block(ng-show='!!currentProfileCanAddRule') {{'popup_requestErrorAddCondition' | tr}} 
-        .checkbox(ng-repeat='domain in requestInfo.domains track by domain.domain')
+        .checkbox(ng-repeat='domain in failedDomains track by domain.domain')
           label
             input(type='checkbox' ng-model='domainsForCondition[domain.domain]' autofocus ng-if='$index === 0')
             input(type='checkbox' ng-model='domainsForCondition[domain.domain]' ng-if='$index > 0')

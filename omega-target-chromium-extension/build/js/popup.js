@@ -127,7 +127,7 @@
   });
 
   module.controller('PopupCtrl', function($scope, $window, $q, omegaTarget, profileIcons, profileOrder, dispNameFilter, getVirtualTarget) {
-    var preselectedProfileNameForCondition, refresh, refreshOnProfileChange;
+    var loadTempRules, preselectedProfileNameForCondition, refresh, refreshOnProfileChange;
     $scope.closePopup = function() {
       return $window.close();
     };
@@ -219,11 +219,34 @@
     $scope.nameExternal = {
       open: false
     };
+    $scope.tempRules = [];
+    loadTempRules = function() {
+      return omegaTarget.getTempRules().then(function(rules) {
+        return $scope.tempRules = rules != null ? rules : [];
+      });
+    };
+    loadTempRules();
     $scope.addTempRule = function(domain, profileName) {
       $scope.tempRuleMenu.open = false;
       return omegaTarget.addTempRule(domain, profileName).then(function() {
         omegaTarget.state('lastProfileNameForCondition', profileName);
         return refresh();
+      });
+    };
+    $scope.removeTempRule = function(domain) {
+      return omegaTarget.removeTempRule(domain).then(function() {
+        return loadTempRules().then(function() {
+          if ($scope.tempRules.length === 0) {
+            return $scope.showTempRules = false;
+          }
+        });
+      });
+    };
+    $scope.clearTempRules = function() {
+      return omegaTarget.clearTempRules().then(function() {
+        return loadTempRules().then(function() {
+          return $scope.showTempRules = false;
+        });
       });
     };
     $scope.setDefaultProfile = function(profileName, defaultProfileName) {
@@ -277,11 +300,17 @@
         return;
       }
       $scope.showConditionForm = false;
-      return $scope.showRequestInfo = false;
+      $scope.showRequestInfo = false;
+      $scope.showTempRules = false;
+      return $scope.showNetwork = false;
     };
     preselectedProfileNameForCondition = 'direct';
     if ($window.location.hash === '#!requestInfo') {
       $scope.showRequestInfo = true;
+    } else if ($window.location.hash === '#!tempRules') {
+      $scope.showTempRules = true;
+    } else if ($window.location.hash === '#!network') {
+      $scope.showNetwork = true;
     } else if ($window.location.hash === '#!external') {
       $scope.nameExternal = {
         open: true
@@ -342,7 +371,7 @@
     $scope.domainsForCondition = {};
     $scope.requestInfoProvided = null;
     omegaTarget.setRequestInfoCallback(function(info) {
-      var domain, domainInfo, _ref;
+      var d, domain, domainInfo, failedDomains, _ref;
       info.domains = [];
       _ref = info.summary;
       for (domain in _ref) {
@@ -352,17 +381,30 @@
         info.domains.push(domainInfo);
       }
       info.domains.sort(function(a, b) {
-        return b.errorCount - a.errorCount;
+        var _ref1, _ref2;
+        return (b.errorCount - a.errorCount) || (((_ref1 = b.requestCount) != null ? _ref1 : 0) - ((_ref2 = a.requestCount) != null ? _ref2 : 0));
       });
-      return $scope.$apply(function() {
-        var _base, _j, _len, _name, _ref1;
-        $scope.requestInfo = info;
-        if ($scope.requestInfoProvided == null) {
-          $scope.requestInfoProvided = (info != null ? info.domains.length : void 0) > 0;
-        }
+      failedDomains = (function() {
+        var _j, _len, _ref1, _results;
         _ref1 = info.domains;
+        _results = [];
         for (_j = 0, _len = _ref1.length; _j < _len; _j++) {
-          domain = _ref1[_j];
+          d = _ref1[_j];
+          if (d.errorCount > 0) {
+            _results.push(d);
+          }
+        }
+        return _results;
+      })();
+      return $scope.$apply(function() {
+        var _base, _j, _len, _name;
+        $scope.requestInfo = info;
+        $scope.failedDomains = failedDomains;
+        if ($scope.requestInfoProvided == null) {
+          $scope.requestInfoProvided = failedDomains.length > 0;
+        }
+        for (_j = 0, _len = failedDomains.length; _j < _len; _j++) {
+          domain = failedDomains[_j];
           if ((_base = $scope.domainsForCondition)[_name = domain.domain] == null) {
             _base[_name] = true;
           }

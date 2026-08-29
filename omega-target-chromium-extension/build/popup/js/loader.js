@@ -6,6 +6,10 @@ $script('../js/omega_target_popup.js', 'om-target', function() {
     window.OmegaPopup.pageInfo = info;
     $script.done('om-page-info');
   });
+  OmegaTargetPopup.getTempRules(function(err, rules) {
+    window.OmegaPopup.tempRules = rules || [];
+    $script.done('om-temp-rules');
+  });
   OmegaTargetPopup.getState([
     'availableProfiles',
     'currentProfileName',

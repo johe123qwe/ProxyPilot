@@ -1044,6 +1044,39 @@ msgstr "添加条件到情景模式"
 msgid "popup_addCondition"
 msgstr "添加条件"
 
+msgid "popup_manageTempRules"
+msgstr "临时规则 ($COUNT$)"
+
+msgid "popup_tempRulesHeading"
+msgstr "临时规则"
+
+msgid "popup_tempRulesHelp"
+msgstr "临时规则在扩展重启前有效，不会保存到情景模式中。"
+
+msgid "popup_removeTempRule"
+msgstr "删除此临时规则"
+
+msgid "popup_clearTempRules"
+msgstr "全部删除"
+
+msgid "popup_networkMonitor"
+msgstr "网络监视 ($COUNT$ 个域名)"
+
+msgid "popup_networkHeading"
+msgstr "本页面的请求"
+
+msgid "popup_networkHelp"
+msgstr "本页面各域名分别匹配到了哪个情景模式。可用于确认规则是否按预期生效。"
+
+msgid "popup_networkDomain"
+msgstr "域名"
+
+msgid "popup_networkProfile"
+msgstr "情景模式"
+
+msgid "popup_networkRequests"
+msgstr "请求数"
+
 msgid "popup_showOptions"
 msgstr "选项"
 

@@ -1175,6 +1175,39 @@ msgstr "Add condition to"
 msgid "popup_addCondition"
 msgstr "Add condition"
 
+msgid "popup_manageTempRules"
+msgstr "Temp rules ($COUNT$)"
+
+msgid "popup_tempRulesHeading"
+msgstr "Temporary rules"
+
+msgid "popup_tempRulesHelp"
+msgstr "Temporary rules apply until the extension restarts. They are not saved to your profiles."
+
+msgid "popup_removeTempRule"
+msgstr "Remove this temporary rule"
+
+msgid "popup_clearTempRules"
+msgstr "Remove all"
+
+msgid "popup_networkMonitor"
+msgstr "Network ($COUNT$ domains)"
+
+msgid "popup_networkHeading"
+msgstr "Requests on this page"
+
+msgid "popup_networkHelp"
+msgstr "Which profile each domain on this page is matched to. Useful for checking that your rules do what you expect."
+
+msgid "popup_networkDomain"
+msgstr "Domain"
+
+msgid "popup_networkProfile"
+msgstr "Profile"
+
+msgid "popup_networkRequests"
+msgstr "Requests"
+
 msgid "popup_showOptions"
 msgstr "Options"
 

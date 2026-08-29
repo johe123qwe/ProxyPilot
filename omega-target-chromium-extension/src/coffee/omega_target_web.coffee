@@ -149,6 +149,12 @@ angular.module('omegaTarget', []).factory 'omegaTarget', ($q) ->
       callBackgroundNoReply('applyProfile', name)
     addTempRule: (domain, profileName) ->
       callBackground('addTempRule', domain, profileName)
+    getTempRules: ->
+      callBackground('getTempRules')
+    removeTempRule: (domain) ->
+      callBackground('removeTempRule', domain)
+    clearTempRules: ->
+      callBackground('clearTempRules')
     addCondition: (condition, profileName) ->
       callBackground('addCondition', condition, profileName)
     addProfile: (profile) ->

@@ -854,6 +854,56 @@ class Options
     return null
 
   ###*
+  # List all the temp rules currently in effect.
+  # @returns {Array<{domain: String, profileName: String}>} The temp rules
+  ###
+  getTempRules: ->
+    rules = []
+    for own domain, rule of @_tempProfileRules
+      continue unless rule?.profileName
+      rules.push({domain: domain, profileName: rule.profileName})
+    rules.sort (a, b) -> if a.domain < b.domain then -1 else 1
+    return rules
+
+  ###*
+  # Remove a temp rule by domain.
+  # @param {String} domain The domain of the temp rule to remove.
+  # @returns {Promise} A promise which is fulfilled when the rule is removed.
+  ###
+  removeTempRule: (domain) ->
+    @log.method('Options#removeTempRule', this, arguments)
+    rule = @_tempProfileRules[domain]
+    return Promise.resolve() if not rule
+    delete @_tempProfileRules[domain]
+    if rule.profileName
+      key = OmegaPac.Profiles.nameAsKey(rule.profileName)
+      list = @_tempProfileRulesByProfile[key]
+      if list
+        index = list.indexOf(rule)
+        list.splice(index, 1) if index >= 0
+        delete @_tempProfileRulesByProfile[key] if list.length == 0
+    if @_tempProfile
+      index = @_tempProfile.rules.indexOf(rule)
+      @_tempProfile.rules.splice(index, 1) if index >= 0
+      OmegaPac.Profiles.updateRevision(@_tempProfile)
+    return Promise.resolve() if not @_currentProfileName
+    @applyProfile(@_currentProfileName)
+
+  ###*
+  # Remove every temp rule currently in effect.
+  # @returns {Promise} A promise which is fulfilled when the rules are removed.
+  ###
+  clearTempRules: ->
+    @log.method('Options#clearTempRules', this, arguments)
+    @_tempProfileRules = {}
+    @_tempProfileRulesByProfile = {}
+    if @_tempProfile
+      @_tempProfile.rules = []
+      OmegaPac.Profiles.updateRevision(@_tempProfile)
+    return Promise.resolve() if not @_currentProfileName
+    @applyProfile(@_currentProfileName)
+
+  ###*
   # Add a condition to the current active switch profile.
   # @param {Object.<String,{}>} cond The condition to add
   # @param {string>} profileName The name of the result profile of the rule.

@@ -1031,6 +1031,39 @@ msgstr "加入條件到情境模式"
 msgid "popup_addCondition"
 msgstr "加入條件"
 
+msgid "popup_manageTempRules"
+msgstr "暫時規則 ($COUNT$)"
+
+msgid "popup_tempRulesHeading"
+msgstr "暫時規則"
+
+msgid "popup_tempRulesHelp"
+msgstr "暫時規則在擴充功能重新啟動前有效，不會儲存到情境模式中。"
+
+msgid "popup_removeTempRule"
+msgstr "刪除此暫時規則"
+
+msgid "popup_clearTempRules"
+msgstr "全部刪除"
+
+msgid "popup_networkMonitor"
+msgstr "網路監視 ($COUNT$ 個網域)"
+
+msgid "popup_networkHeading"
+msgstr "本頁面的請求"
+
+msgid "popup_networkHelp"
+msgstr "本頁面各網域分別比對到了哪個情境模式。可用於確認規則是否按預期生效。"
+
+msgid "popup_networkDomain"
+msgstr "網域"
+
+msgid "popup_networkProfile"
+msgstr "情境模式"
+
+msgid "popup_networkRequests"
+msgstr "請求數"
+
 msgid "popup_showOptions"
 msgstr "選項"
 

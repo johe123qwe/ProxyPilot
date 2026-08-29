@@ -172,14 +172,18 @@ module.exports = class WebRequestMonitor
       info[@eventCategory[status] + 'Count']++
       id = @getSummaryId?(req)
       if id?
+        summaryItem = info.summary[id]
+        if not summaryItem?
+          # sampleUrl lets consumers re-run profile matching for this domain,
+          # which the summary id (a wildcard pattern) cannot be matched against.
+          summaryItem = info.summary[id] =
+            {errorCount: 0, requestCount: 0, sampleUrl: req.url}
+        if not oldStatus?
+          summaryItem.requestCount++
         if @eventCategory[status] == 'error'
           if @eventCategory[oldStatus] != 'error'
-            summaryItem = info.summary[id]
-            if not summaryItem?
-              summaryItem = info.summary[id] = {errorCount: 0}
             summaryItem.errorCount++
         else if @eventCategory[oldStatus] == 'error'
-          summaryItem = info.summary[id]
-          summaryItem.errorCount-- if summaryItem?
+          summaryItem.errorCount--
       for callback in @_tabCallbacks
         callback(req.tabId, info, req, status)

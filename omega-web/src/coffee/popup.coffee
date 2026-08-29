@@ -147,9 +147,26 @@ module.controller 'PopupCtrl', ($scope, $window, $q, omegaTarget,
   $scope.tempRuleMenu = {open: false}
   $scope.nameExternal = {open: false}
   $scope.tempRules = []
+
+  # Resolve profile names to profile objects for the panels below. A name may
+  # have no entry - the temp profile is created with an empty name, and a
+  # profile can be removed while a rule still points at it - and
+  # omega-profile-inline dereferences whatever it is handed, so never hand it
+  # a miss.
+  annotateProfiles = ->
+    profiles = $scope.availableProfiles
+    return unless profiles
+    for rule in ($scope.tempRules ? [])
+      rule.profile = profiles['+' + rule.profileName]
+    for domain in ($scope.requestInfo?.domains ? [])
+      domain.profile =
+        if domain.profileName then profiles['+' + domain.profileName] else null
+    return
+
   loadTempRules = ->
     omegaTarget.getTempRules().then (rules) ->
       $scope.tempRules = rules ? []
+      annotateProfiles()
   loadTempRules()
 
   $scope.addTempRule = (domain, profileName) ->
@@ -266,6 +283,9 @@ module.controller 'PopupCtrl', ($scope, $window, $q, omegaTarget,
           profilesByNames(profile.validResultProfiles)
 
     $scope.customProfiles.sort(profileOrder)
+    # availableProfiles has only just arrived; anything already loaded that
+    # refers to profiles by name can be resolved now.
+    annotateProfiles()
 
   $scope.domainsForCondition = {}
   $scope.requestInfoProvided = null
@@ -283,6 +303,7 @@ module.controller 'PopupCtrl', ($scope, $window, $q, omegaTarget,
       $scope.requestInfo = info
       $scope.failedDomains = failedDomains
       $scope.requestInfoProvided ?= (failedDomains.length > 0)
+      annotateProfiles()
       for domain in failedDomains
         $scope.domainsForCondition[domain.domain] ?= true
       $scope.profileForDomains ?= preselectedProfileNameForCondition

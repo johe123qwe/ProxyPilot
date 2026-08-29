@@ -3,7 +3,12 @@ module.exports =
     files:
       'index.js': 'index.coffee'
     options:
-      transform: ['coffeeify']
+      # The jsondiffpatch patch has to be global: plain transforms are not
+      # applied to files inside node_modules.
+      transform: [
+        'coffeeify'
+        ['./browserify_jsondiffpatch_env.js', {global: true}]
+      ]
       exclude: ['bluebird', 'jsondiffpatch', 'omega-pac']
       browserifyOptions:
         extensions: '.coffee'
@@ -17,7 +22,12 @@ module.exports =
       alias: [
         './index.coffee:OmegaTarget'
       ]
-      transform: ['coffeeify']
+      # The jsondiffpatch patch has to be global: plain transforms are not
+      # applied to files inside node_modules.
+      transform: [
+        'coffeeify'
+        ['./browserify_jsondiffpatch_env.js', {global: true}]
+      ]
       plugin:
         if process.env.BUILD == 'release'
           [['minifyify', {map: false}]]

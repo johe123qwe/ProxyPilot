@@ -146,10 +146,11 @@ html(lang='en' ng-app='omegaPopup' ng-controller='PopupCtrl' ng-csp)
             ng-class='{"bg-warning": domain.errorCount > 0}')
             td.network-domain {{domain.domain}}
             td
-              span(ng-if='domain.profileName'
-                omega-profile-inline='availableProfiles["+" + domain.profileName]'
+              span(ng-if='domain.profile'
+                omega-profile-inline='domain.profile'
                 options='availableProfiles' disp-name='dispNameFilter')
-              span.text-muted(ng-if='!domain.profileName') —
+              span.text-muted(ng-if='!domain.profile')
+                | {{domain.profileName || '—'}}
             td.text-right
               span.label.label-warning(ng-if='domain.errorCount > 0')
                 | {{domain.errorCount}}
@@ -166,8 +167,9 @@ html(lang='en' ng-app='omegaPopup' ng-controller='PopupCtrl' ng-csp)
           tr(ng-repeat='rule in tempRules track by rule.domain')
             td.temp-rule-domain {{rule.domain}}
             td
-              span(omega-profile-inline='availableProfiles["+" + rule.profileName]'
+              span(ng-if='rule.profile' omega-profile-inline='rule.profile'
                 options='availableProfiles' disp-name='dispNameFilter')
+              span.text-muted(ng-if='!rule.profile') {{rule.profileName}}
             td.temp-rule-actions
               button.btn.btn-danger.btn-xs(type='button'
                 title='{{"popup_removeTempRule" | tr}}'

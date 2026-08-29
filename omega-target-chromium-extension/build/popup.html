@@ -104,7 +104,7 @@ along with SwitchyOmega.  If not, see <http://www.gnu.org/licenses/>.
           </tr>
           <tr ng-repeat="domain in requestInfo.domains track by domain.domain" ng-class="{&quot;bg-warning&quot;: domain.errorCount &gt; 0}">
             <td class="network-domain">{{domain.domain}}</td>
-            <td><span ng-if="domain.profileName" omega-profile-inline="availableProfiles[&quot;+&quot; + domain.profileName]" options="availableProfiles" disp-name="dispNameFilter"></span><span ng-if="!domain.profileName" class="text-muted">—</span></td>
+            <td><span ng-if="domain.profile" omega-profile-inline="domain.profile" options="availableProfiles" disp-name="dispNameFilter"></span><span ng-if="!domain.profile" class="text-muted">{{domain.profileName || '—'}}</span></td>
             <td class="text-right"><span ng-if="domain.errorCount &gt; 0" class="label label-warning">{{domain.errorCount}}</span> <span>{{domain.requestCount}}</span>
             </td>
           </tr>
@@ -121,7 +121,7 @@ along with SwitchyOmega.  If not, see <http://www.gnu.org/licenses/>.
         <table class="table table-condensed temp-rules-table">
           <tr ng-repeat="rule in tempRules track by rule.domain">
             <td class="temp-rule-domain">{{rule.domain}}</td>
-            <td><span omega-profile-inline="availableProfiles[&quot;+&quot; + rule.profileName]" options="availableProfiles" disp-name="dispNameFilter"></span></td>
+            <td><span ng-if="rule.profile" omega-profile-inline="rule.profile" options="availableProfiles" disp-name="dispNameFilter"></span><span ng-if="!rule.profile" class="text-muted">{{rule.profileName}}</span></td>
             <td class="temp-rule-actions">
               <button type="button" title="{{&quot;popup_removeTempRule&quot; | tr}}" ng-click="removeTempRule(rule.domain)" class="btn btn-danger btn-xs"><span class="glyphicon glyphicon-trash"></span></button>
             </td>

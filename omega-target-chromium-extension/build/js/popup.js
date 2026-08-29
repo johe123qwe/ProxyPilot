@@ -127,7 +127,7 @@
   });
 
   module.controller('PopupCtrl', function($scope, $window, $q, omegaTarget, profileIcons, profileOrder, dispNameFilter, getVirtualTarget) {
-    var loadTempRules, preselectedProfileNameForCondition, refresh, refreshOnProfileChange;
+    var annotateProfiles, loadTempRules, preselectedProfileNameForCondition, refresh, refreshOnProfileChange;
     $scope.closePopup = function() {
       return $window.close();
     };
@@ -220,9 +220,27 @@
       open: false
     };
     $scope.tempRules = [];
+    annotateProfiles = function() {
+      var domain, profiles, rule, _j, _k, _len, _len1, _ref, _ref1, _ref2, _ref3, _ref4;
+      profiles = $scope.availableProfiles;
+      if (!profiles) {
+        return;
+      }
+      _ref1 = (_ref = $scope.tempRules) != null ? _ref : [];
+      for (_j = 0, _len = _ref1.length; _j < _len; _j++) {
+        rule = _ref1[_j];
+        rule.profile = profiles['+' + rule.profileName];
+      }
+      _ref4 = (_ref2 = (_ref3 = $scope.requestInfo) != null ? _ref3.domains : void 0) != null ? _ref2 : [];
+      for (_k = 0, _len1 = _ref4.length; _k < _len1; _k++) {
+        domain = _ref4[_k];
+        domain.profile = domain.profileName ? profiles['+' + domain.profileName] : null;
+      }
+    };
     loadTempRules = function() {
       return omegaTarget.getTempRules().then(function(rules) {
-        return $scope.tempRules = rules != null ? rules : [];
+        $scope.tempRules = rules != null ? rules : [];
+        return annotateProfiles();
       });
     };
     loadTempRules();
@@ -366,7 +384,8 @@
           profile.validResultProfiles = profilesByNames(profile.validResultProfiles);
         }
       }
-      return $scope.customProfiles.sort(profileOrder);
+      $scope.customProfiles.sort(profileOrder);
+      return annotateProfiles();
     });
     $scope.domainsForCondition = {};
     $scope.requestInfoProvided = null;
@@ -403,6 +422,7 @@
         if ($scope.requestInfoProvided == null) {
           $scope.requestInfoProvided = failedDomains.length > 0;
         }
+        annotateProfiles();
         for (_j = 0, _len = failedDomains.length; _j < _len; _j++) {
           domain = failedDomains[_j];
           if ((_base = $scope.domainsForCondition)[_name = domain.domain] == null) {

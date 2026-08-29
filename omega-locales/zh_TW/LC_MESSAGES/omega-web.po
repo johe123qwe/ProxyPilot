@@ -949,6 +949,11 @@ msgstr "在遠端伺服器上找不到情境模式網址對應的檔案。請檢
 msgid "options_profileDownloadError_HttpServerError"
 msgstr "更新時遠端伺服器發生錯誤 ($STATUS$)。"
 
+msgid "options_profileDownloadError_RedirectRefusedError"
+msgstr "該情境模式網址發生了跳轉，而此情境模式設定了自訂請求標頭。"
+"為避免這些請求標頭（通常包含憑證）洩漏給跳轉目標，本次沒有跟隨跳轉。"
+"請將情境模式網址改為跳轉後的最終位址。"
+
 msgid "options_profileDownloadError_ContentTypeRejectedError"
 msgstr "下載的資料不符合格式！建議您在瀏覽器中打開情境模式網址並檢查其內容。"
 

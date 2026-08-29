@@ -40,20 +40,12 @@ fetchWrapper = (url, headers, opt_bypass_cache) ->
     throw new OmegaTarget.NetworkError(err)
   ).then (response) ->
     if response.type == 'opaqueredirect' or (300 <= response.status < 400)
-      throw redirectRefusedError()
+      throw new OmegaTarget.RedirectRefusedError(
+        "This URL redirects, and this profile sends custom request headers.
+        Refusing to follow the redirect, so that the headers - which usually
+        carry credentials - are not disclosed to the redirect target. Point
+        the profile at the final URL instead.")
     return fetchWrapperResponse(response)
-
-# These error classes extend Error through CoffeeScript's ES5 class emulation,
-# which does not carry `message` through super, so set it directly - here the
-# explanation is the whole point of the error.
-redirectRefusedError = ->
-  message = "This URL redirects, and this profile sends custom request
-    headers. Refusing to follow the redirect, so that the headers - which
-    usually carry credentials - are not disclosed to the redirect target.
-    Point the profile at the final URL instead."
-  err = new OmegaTarget.NetworkError(new Error(message))
-  err.message = message
-  return err
 
 fetchWrapperResponse = (response) ->
   # Not modified: a successful fetch with nothing to apply. Callers treat an

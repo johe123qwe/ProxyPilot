@@ -1,24 +1,79 @@
 Promise = OmegaTarget.Promise
-xhr = Promise.promisify(require('xhr'))
 Url = require('url')
 ContentTypeRejectedError = OmegaTarget.ContentTypeRejectedError
 
-xhrWrapper = (url, headers) ->
-  options = {uri: url}
-  if headers and Object.keys(headers).length > 0
-    options.headers = headers
-  xhr(options).catch (err) ->
-    throw err unless err.isOperational
-    if not err.statusCode
-      throw new OmegaTarget.NetworkError(err)
-    if err.statusCode == 404
-      throw new OmegaTarget.HttpNotFoundError(err)
-    if err.statusCode >= 500 and err.statusCode < 600
-      throw new OmegaTarget.HttpServerError(err)
-    throw new OmegaTarget.HttpError(err)
+# An MV3 service worker has no XMLHttpRequest, so this uses fetch. Everything
+# below still expects the [response, body] pair the old xhr-based transport
+# resolved to, with response.headers as a plain lower-cased name-to-value map,
+# so adapt fetch's Response to that shape rather than changing every caller.
+responseShim = (response) ->
+  headers = {}
+  response.headers.forEach (value, name) ->
+    headers[name.toLowerCase()] = value
+  return {
+    statusCode: response.status
+    headers: headers
+  }
+
+# Errors carry only the status and the URL. Deliberately not the request
+# headers: those can hold credentials for the rule list, and the error is
+# handed to the options page and written to the stored log.
+httpErrorCause = (response) ->
+  return {statusCode: response.status, url: response.url}
+
+fetchWrapper = (url, headers, opt_bypass_cache) ->
+  hasCustomHeaders = headers and Object.keys(headers).length > 0
+
+  init = {method: 'GET'}
+  init.cache = 'no-store' if opt_bypass_cache
+  init.headers = headers if hasCustomHeaders
+
+  # Custom headers on a rule list or PAC URL are usually credentials. The
+  # browser drops Authorization when a redirect crosses origins, but it
+  # forwards every other header - so a URL that redirects elsewhere would hand
+  # a header like X-Api-Key straight to whoever it points at. Refuse to follow
+  # redirects at all while carrying custom headers, rather than leak them.
+  init.redirect = if hasCustomHeaders then 'manual' else 'follow'
+
+  Promise.resolve(fetch(url, init)).catch((err) ->
+    # No response at all: DNS failure, connection refused, blocked, ...
+    throw new OmegaTarget.NetworkError(err)
+  ).then (response) ->
+    if response.type == 'opaqueredirect' or (300 <= response.status < 400)
+      throw redirectRefusedError()
+    return fetchWrapperResponse(response)
+
+# These error classes extend Error through CoffeeScript's ES5 class emulation,
+# which does not carry `message` through super, so set it directly - here the
+# explanation is the whole point of the error.
+redirectRefusedError = ->
+  message = "This URL redirects, and this profile sends custom request
+    headers. Refusing to follow the redirect, so that the headers - which
+    usually carry credentials - are not disclosed to the redirect target.
+    Point the profile at the final URL instead."
+  err = new OmegaTarget.NetworkError(new Error(message))
+  err.message = message
+  return err
+
+fetchWrapperResponse = (response) ->
+  # Not modified: a successful fetch with nothing to apply. Callers treat an
+  # empty body as "no update".
+  return [responseShim(response), ''] if response.status == 304
+  if response.status == 404
+    throw new OmegaTarget.HttpNotFoundError(httpErrorCause(response))
+  if response.status >= 500 and response.status < 600
+    throw new OmegaTarget.HttpServerError(httpErrorCause(response))
+  if not response.ok
+    throw new OmegaTarget.HttpError(httpErrorCause(response))
+  Promise.resolve(response.text()).catch((err) ->
+    throw new OmegaTarget.NetworkError(err)
+  ).then (body) ->
+    return [responseShim(response), body]
 
 fetchUrl = (dest_url, headers, opt_bypass_cache, opt_type_hints) ->
   getResBody = ([response, body]) ->
+    # 304 carries no body to sniff; an empty result means "nothing to update".
+    return body if response.statusCode == 304
     return body unless opt_type_hints
     contentType = response.headers['content-type']?.toLowerCase()
     for hint in opt_type_hints
@@ -35,11 +90,12 @@ fetchUrl = (dest_url, headers, opt_bypass_cache, opt_type_hints) ->
     parsed.query['_'] = Date.now()
     dest_url_nocache = Url.format(parsed)
     # Try first with the dumb parameter to bypass cache.
-    xhrWrapper(dest_url_nocache, headers).then(getResBody).catch ->
-      # If failed, try again with the original URL.
-      xhrWrapper(dest_url, headers).then(getResBody)
+    fetchWrapper(dest_url_nocache, headers, opt_bypass_cache)
+      .then(getResBody).catch ->
+        # If failed, try again with the original URL.
+        fetchWrapper(dest_url, headers, opt_bypass_cache).then(getResBody)
   else
-    xhrWrapper(dest_url, headers).then(getResBody)
+    fetchWrapper(dest_url, headers, opt_bypass_cache).then(getResBody)
 
 defaultHintHandler = (response, body, {contentType, hint}) ->
   if '!' + contentType == hint

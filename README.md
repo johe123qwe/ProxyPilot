@@ -21,9 +21,65 @@ The original SwitchyOmega project is no longer actively maintained. With Google 
 2. Unzip the downloaded file.
 3. Open Chrome and navigate to `chrome://extensions/`.
 4. Enable **Developer mode** in the top right corner.
-5. Click **Load unpacked** and select the `build` directory (or the unzipped folder).
+5. Click **Load unpacked** and select the unzipped folder.
 
 *Note: ProxyPilot will soon be available directly on the Chrome Web Store.*
+
+## 🔨 Building from source
+
+The built extension is **not** kept in this repository — it is generated from
+the sources. Cloning the repo alone will not give you a folder you can load
+into Chrome; build it first, or just download the zip from the Releases page.
+
+You need [Node.js](https://nodejs.org/) and two global CLI tools:
+
+```bash
+npm install -g grunt-cli bower
+```
+
+Then, from the root of the repository:
+
+```bash
+for m in omega-pac omega-target omega-web omega-target-chromium-extension; do
+  (cd "$m" && npm install)
+done
+(cd omega-web && bower install)
+```
+
+Build every module, in this order — later modules consume the output of
+earlier ones:
+
+```bash
+for m in omega-pac omega-target omega-web omega-target-chromium-extension; do
+  (cd "$m" && grunt)
+done
+```
+
+This produces `omega-target-chromium-extension/build`, which is the folder to
+pick with **Load unpacked**.
+
+To produce a release zip instead:
+
+```bash
+(cd omega-target-chromium-extension && grunt release)
+```
+
+The zip is written to `omega-target-chromium-extension/release.zip`. Note that
+this is the Chrome Web Store variant: it drops the `downloads` permission, so
+"Error log" in the toolbar context menu opens the log in a tab rather than
+saving a file. The zips attached to the Releases page are packed from `build`
+directly and keep that permission.
+
+### Running the tests
+
+```bash
+(cd omega-pac && npm test)
+(cd omega-target && npm test)
+```
+
+Three `TimeCondition` failures in `omega-pac` are expected on current Node
+versions: the tests construct URLs like `http://time-00:00:00/`, which Node
+now rejects as having an invalid port. They are unrelated to the extension.
 
 ## 📄 License
 

@@ -187,13 +187,9 @@ actionForUrl = (url) ->
 storage = new OmegaTargetCurrent.Storage('local')
 state = new OmegaTargetCurrent.BrowserStorage(null, 'omega.local.')
 
-if chrome?.storage?.sync or browser?.storage?.sync
-  syncStorage = new OmegaTargetCurrent.Storage('sync')
-  sync = new OmegaTargetCurrent.OptionsSync(syncStorage)
-  chrome.storage.local.get 'omega.local.syncOptions', (res) ->
-    if res['omega.local.syncOptions'] != '"sync"'
-      sync.enabled = false
-  sync.transformValue = OmegaTargetCurrent.Options.transformValueForSync
+# Options syncing is disabled: no sync storage is ever created, so options
+# only ever live in local storage.
+sync = null
 
 proxyImpl = OmegaTargetCurrent.proxy.getProxyImpl(Log)
 state.set({proxyImplFeatures: proxyImpl.features})
